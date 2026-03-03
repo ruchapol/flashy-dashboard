@@ -1,5 +1,5 @@
 app_name: "Flashy Dashboard API"
-mongo_uri: "mongodb://localhost:27017"
+MONGO_URI: "mongodb://localhost:27017"
 mongo_db_name: "flashy_dashboard"
 
 jwt_secret_key: "CHANGE_ME_IN_PRODUCTION"
