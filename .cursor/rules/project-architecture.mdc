@@ -67,3 +67,8 @@ flowchart LR
   - Design routers, services, and components so that adding a new feature usually means adding new modules or functions, not editing many existing ones.
   - Use clear extension points (e.g., registering new routes, services, or handlers) rather than switches or long `if/elif` chains scattered across the codebase.
   - When adding new behavior, prefer composing existing services or utilities instead of editing their internals, unless you are fixing a bug or paying down clear technical debt.
+
+- **ORM usage for complex queries**:
+  - For simple CRUD and straightforward filters, an ORM or ODM is acceptable.
+  - For highly complex or performance-critical queries and aggregations, prefer **direct MongoDB queries/aggregations** instead of forcing them through an ORM abstraction.
+  - Keep complex query logic in repository modules with clear, well-named functions so they remain testable and reusable.
