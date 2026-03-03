@@ -94,3 +94,14 @@ Collections:
 - Update them with atomic `$inc` on like/unlike and comment create/delete.
 - Timeline reads only from `posts` without aggregations for counts.
 
+---
+
+## 6. MongoDB query safety standards
+
+- Never pass raw user JSON directly into Mongo queries (no `collection.find(request_body)`).
+- Always validate request payloads with Pydantic and build queries from **explicitly named fields**.
+- Reject unexpected fields on input schemas (`extra = "forbid"`) so clients cannot send `$where`, `$gt`, or other operators.
+- Do not expose Mongo operators in the public API; any `$gt` / `$in` / `$or` logic is composed on the server side.
+- Treat all IDs as strings from the client; validate and convert to `ObjectId`, returning `400` on invalid format.
+- Avoid server-side JavaScript features in Mongo (e.g., `$where`); they are not needed for this app.
+
