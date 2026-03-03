@@ -16,20 +16,54 @@ flowchart LR
 
 # Folder Layout
 
-- `frontend/`: Vue application (components, views, routes, state, and UI utilities).
-- `backend/`: FastAPI application (routers, services, schemas, and config).
-- `infra/` (optional): Deployment, Docker, and environment configuration.
+## Frontend (`frontend/`)
+
+- `frontend/src/main.ts`: App bootstrap and global plugins.
+- `frontend/src/router/`: Route definitions and route guards only.
+- `frontend/src/components/`: Reusable, presentational components.
+- `frontend/src/features/<feature>/`: Feature-specific screens, components, and logic.
+  - `components/`: Feature-only components.
+  - `stores/`: Pinia/Vuex stores for this feature.
+  - `api/`: Small API client modules wrapping HTTP calls for this feature.
+- `frontend/src/shared/` or `frontend/src/common/`: Cross-cutting UI pieces, utilities, and types.
+
+## Backend (`backend/`)
+
+- `backend/app/main.py`: FastAPI app creation and global middleware.
+- `backend/app/api/` or `backend/app/routers/`: Route modules grouped by feature or resource.
+- `backend/app/services/`: Business/use-case logic, orchestrating repositories and external services.
+- `backend/app/schemas/`: Pydantic models for requests/responses.
+- `backend/app/repositories/` or `backend/app/db/`: MongoDB data-access code (queries, aggregations).
+- `backend/app/core/`: Settings, security, and other core infrastructure concerns.
+
+## Infra (`infra/`) (optional)
+
+- Deployment manifests, Dockerfiles, and environment configuration.
 
 # Boundaries & Responsibilities
 
 - Vue components handle UI, local state, and calling typed HTTP APIs; they do not contain business or persistence logic.
+- Frontend `api` modules own HTTP details (URLs, headers, error mapping) and expose typed functions to the rest of the app.
 - FastAPI routers focus on request/response wiring and delegate logic to services.
 - Services (or use-case modules) implement business rules and call MongoDB through a dedicated data-access layer.
 - MongoDB access is centralized (e.g., repositories/DAOs), not called directly from routers or Vue code.
 
 # Minimal Conventions
 
-- Prefer feature folders within `frontend/` and `backend/` when a domain grows (e.g., `frontend/features/dashboard`, `backend/features/dashboard`).
+- Prefer feature folders within `frontend/` and `backend/` when a domain grows (e.g., `frontend/src/features/dashboard`, `backend/app/api/dashboard`).
 - Name Vue components in `PascalCase` (`DashboardPanel.vue`) and FastAPI modules in `snake_case` (`dashboard_routes.py`).
-- Add new endpoints under the appropriate router module and expose them via a small API client module in `frontend/`.
+- In both frontend and backend, name feature folders by domain (e.g., `auth`, `dashboard`, `reports`) rather than technology.
+- Add new endpoints under the appropriate router module and expose them via a small API client module in `frontend/src/features/<feature>/api/`.
 - Keep cross-cutting utilities in clearly named `shared` or `common` subfolders rather than mixing them into feature folders.
+
+# Design Principles
+
+- **DRY, but not over-DRY**:
+  - Extract shared logic when it is used in at least two meaningful places and has a clear name (e.g., `useFetchDashboard` or `dashboard_repository`).
+  - Do not create abstractions for one-off cases or for code that is still evolving; duplication is acceptable until patterns are stable.
+  - Prefer simple, local duplication over complex indirection that makes features harder to read or change.
+
+- **Open for extension, closed for modification**:
+  - Design routers, services, and components so that adding a new feature usually means adding new modules or functions, not editing many existing ones.
+  - Use clear extension points (e.g., registering new routes, services, or handlers) rather than switches or long `if/elif` chains scattered across the codebase.
+  - When adding new behavior, prefer composing existing services or utilities instead of editing their internals, unless you are fixing a bug or paying down clear technical debt.
