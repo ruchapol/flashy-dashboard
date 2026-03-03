@@ -1,0 +1,18 @@
+---
+description: Store backend config in YAML files
+alwaysApply: true
+---
+
+# Backend Configuration in YAML
+
+- **Store backend configuration in YAML files**, not hard-coded in Python modules.
+- The primary backend settings should live in a YAML file (e.g. `backend/app/config.yml`), including:
+  - `app_name`
+  - database connection details (e.g. `mongo_uri`, `mongo_db_name`)
+  - auth/JWT settings (e.g. `jwt_secret_key`, `jwt_algorithm`, `access_token_expires_minutes`)
+- **Python code (`app/core/config.py`) should only define the schema and loading logic**, reading values from the YAML file (and optionally environment variables), not embedding defaults that duplicate production config.
+- When adding new backend configuration values:
+  - Add them to the YAML file.
+  - Add typed fields to the `Settings` class in `config.py`.
+  - Prefer reading from YAML (with env overrides if needed) rather than hard-coding values in Python.
+

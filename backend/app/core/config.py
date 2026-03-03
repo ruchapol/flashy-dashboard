@@ -1,18 +1,20 @@
 from functools import lru_cache
-from typing import Annotated
+from pathlib import Path
+from typing import Annotated, Any
 
+import yaml
 from pydantic import AnyUrl, Field
 from pydantic_settings import BaseSettings
 
 
 class Settings(BaseSettings):
-    app_name: str = "Flashy Dashboard API"
-    mongo_uri: Annotated[AnyUrl, Field(alias="MONGO_URI")] = "mongodb://localhost:27017"
-    mongo_db_name: str = "flashy_dashboard"
+    app_name: str
+    mongo_uri: Annotated[AnyUrl, Field(alias="MONGO_URI")]
+    mongo_db_name: str
 
-    jwt_secret_key: str = "CHANGE_ME_IN_PRODUCTION"
-    jwt_algorithm: str = "HS256"
-    access_token_expires_minutes: int = 60 * 24
+    jwt_secret_key: str
+    jwt_algorithm: str
+    access_token_expires_minutes: int
 
     class Config:
         env_file = ".env"
@@ -20,7 +22,18 @@ class Settings(BaseSettings):
         env_prefix = "FLASHY_"
 
 
+CONFIG_PATH = Path(__file__).resolve().parent.parent / "config.yml"
+
+
+def _load_config_from_yaml() -> dict[str, Any]:
+    raw = yaml.safe_load(CONFIG_PATH.read_text(encoding="utf-8")) or {}
+    if not isinstance(raw, dict):
+        raise ValueError("Config YAML must contain a top-level mapping")
+    return raw
+
+
 @lru_cache
 def get_settings() -> Settings:
-    return Settings()  # type: ignore[arg-type]
+    data = _load_config_from_yaml()
+    return Settings(**data)  # type: ignore[arg-type]
 
