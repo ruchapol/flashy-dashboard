@@ -1,0 +1,209 @@
+{
+  "users": [
+    {
+      "_id": "u_math_nerd",
+      "username": "math_nerd",
+      "email": "math.nerd@example.com",
+      "password_hash": "<hashed-password-here>",
+      "role": "user",
+      "created_at": "2026-03-03T10:00:00Z"
+    },
+    {
+      "_id": "u_graph_artist",
+      "username": "graph_artist",
+      "email": "graph.artist@example.com",
+      "password_hash": "<hashed-password-here>",
+      "role": "user",
+      "created_at": "2026-03-03T10:05:00Z"
+    },
+    {
+      "_id": "u_teacher_anna",
+      "username": "teacher_anna",
+      "email": "anna.teacher@example.com",
+      "password_hash": "<hashed-password-here>",
+      "role": "user",
+      "created_at": "2026-03-03T10:10:00Z"
+    },
+    {
+      "_id": "u_admin",
+      "username": "admin",
+      "email": "admin@example.com",
+      "password_hash": "<hashed-password-here>",
+      "role": "admin",
+      "created_at": "2026-03-03T09:55:00Z"
+    }
+  ],
+  "posts": [
+    {
+      "_id": "p_sinc_wave",
+      "author_id": "u_math_nerd",
+      "equation_text": "sin(x)/x",
+      "x_min": -15,
+      "x_max": 15,
+      "y_min": -0.5,
+      "y_max": 1.2,
+      "y_auto": false,
+      "caption": "Classic sinc wave — smooth and pretty.",
+      "created_at": "2026-03-03T11:00:00Z",
+      "like_count": 3,
+      "comment_count": 2
+    },
+    {
+      "_id": "p_heart_shape",
+      "author_id": "u_graph_artist",
+      "equation_text": "sqrt(1-(abs(x)-1)^2)",
+      "x_min": -2,
+      "x_max": 2,
+      "y_min": -1,
+      "y_max": 1.5,
+      "y_auto": false,
+      "caption": "Heart-ish curve using a fun formula.",
+      "created_at": "2026-03-03T11:05:00Z",
+      "like_count": 5,
+      "comment_count": 3
+    },
+    {
+      "_id": "p_spiky_cos",
+      "author_id": "u_math_nerd",
+      "equation_text": "cos(5*x)/(1+0.2*x^2)",
+      "x_min": -10,
+      "x_max": 10,
+      "y_min": -1.5,
+      "y_max": 1.5,
+      "y_auto": false,
+      "caption": "Damped oscillation — spikes fading out.",
+      "created_at": "2026-03-03T11:10:00Z",
+      "like_count": 1,
+      "comment_count": 1
+    },
+    {
+      "_id": "p_parabola",
+      "author_id": "u_teacher_anna",
+      "equation_text": "0.5*x^2",
+      "x_min": -5,
+      "x_max": 5,
+      "y_min": 0,
+      "y_max": 15,
+      "y_auto": false,
+      "caption": "Simple parabola for intro algebra class.",
+      "created_at": "2026-03-03T11:15:00Z",
+      "like_count": 2,
+      "comment_count": 0
+    },
+    {
+      "_id": "p_abs_x",
+      "author_id": "u_teacher_anna",
+      "equation_text": "abs(x)",
+      "x_min": -5,
+      "x_max": 5,
+      "y_min": 0,
+      "y_max": 5,
+      "y_auto": false,
+      "caption": "V-shape: absolute value function example.",
+      "created_at": "2026-03-03T11:20:00Z",
+      "like_count": 0,
+      "comment_count": 1
+    }
+  ],
+  "comments": [
+    {
+      "_id": "c1",
+      "post_id": "p_sinc_wave",
+      "author_id": "u_graph_artist",
+      "text": "Love this — looks so smooth!",
+      "created_at": "2026-03-03T11:01:30Z"
+    },
+    {
+      "_id": "c2",
+      "post_id": "p_sinc_wave",
+      "author_id": "u_teacher_anna",
+      "text": "Great example for Fourier discussions.",
+      "created_at": "2026-03-03T11:02:00Z"
+    },
+    {
+      "_id": "c3",
+      "post_id": "p_heart_shape",
+      "author_id": "u_math_nerd",
+      "text": "This will be perfect for Valentine’s Day homework 😂",
+      "created_at": "2026-03-03T11:06:00Z"
+    },
+    {
+      "_id": "c4",
+      "post_id": "p_heart_shape",
+      "author_id": "u_teacher_anna",
+      "text": "Students will definitely pay attention to this one.",
+      "created_at": "2026-03-03T11:06:30Z"
+    },
+    {
+      "_id": "c5",
+      "post_id": "p_spiky_cos",
+      "author_id": "u_graph_artist",
+      "text": "Those spikes are satisfying.",
+      "created_at": "2026-03-03T11:11:00Z"
+    },
+    {
+      "_id": "c6",
+      "post_id": "p_abs_x",
+      "author_id": "u_math_nerd",
+      "text": "Nice clean example of a non-differentiable point.",
+      "created_at": "2026-03-03T11:21:00Z"
+    }
+  ],
+  "likes": [
+    {
+      "_id": "l1",
+      "post_id": "p_sinc_wave",
+      "user_id": "u_graph_artist",
+      "created_at": "2026-03-03T11:00:30Z"
+    },
+    {
+      "_id": "l2",
+      "post_id": "p_sinc_wave",
+      "user_id": "u_teacher_anna",
+      "created_at": "2026-03-03T11:00:45Z"
+    },
+    {
+      "_id": "l3",
+      "post_id": "p_sinc_wave",
+      "user_id": "u_admin",
+      "created_at": "2026-03-03T11:01:00Z"
+    },
+    {
+      "_id": "l4",
+      "post_id": "p_heart_shape",
+      "user_id": "u_math_nerd",
+      "created_at": "2026-03-03T11:05:30Z"
+    },
+    {
+      "_id": "l5",
+      "post_id": "p_heart_shape",
+      "user_id": "u_teacher_anna",
+      "created_at": "2026-03-03T11:05:45Z"
+    },
+    {
+      "_id": "l6",
+      "post_id": "p_heart_shape",
+      "user_id": "u_admin",
+      "created_at": "2026-03-03T11:06:10Z"
+    },
+    {
+      "_id": "l7",
+      "post_id": "p_spiky_cos",
+      "user_id": "u_graph_artist",
+      "created_at": "2026-03-03T11:10:30Z"
+    },
+    {
+      "_id": "l8",
+      "post_id": "p_parabola",
+      "user_id": "u_math_nerd",
+      "created_at": "2026-03-03T11:15:30Z"
+    },
+    {
+      "_id": "l9",
+      "post_id": "p_parabola",
+      "user_id": "u_graph_artist",
+      "created_at": "2026-03-03T11:15:45Z"
+    }
+  ]
+}
+
