@@ -1,0 +1,35 @@
+---
+description: High-level architecture and minimal organization rules for Vue + FastAPI + MongoDB
+alwaysApply: true
+---
+
+# Project Architecture
+
+This project is a Vue.js SPA frontend talking to a FastAPI backend, which persists data in MongoDB.
+
+```mermaid
+flowchart LR
+  userBrowser["UserBrowser"] --> vueApp["VueApp (SPA)"]
+  vueApp --> fastApi["FastAPIBackend"]
+  fastApi --> mongoDb["MongoDB"]
+```
+
+# Folder Layout
+
+- `frontend/`: Vue application (components, views, routes, state, and UI utilities).
+- `backend/`: FastAPI application (routers, services, schemas, and config).
+- `infra/` (optional): Deployment, Docker, and environment configuration.
+
+# Boundaries & Responsibilities
+
+- Vue components handle UI, local state, and calling typed HTTP APIs; they do not contain business or persistence logic.
+- FastAPI routers focus on request/response wiring and delegate logic to services.
+- Services (or use-case modules) implement business rules and call MongoDB through a dedicated data-access layer.
+- MongoDB access is centralized (e.g., repositories/DAOs), not called directly from routers or Vue code.
+
+# Minimal Conventions
+
+- Prefer feature folders within `frontend/` and `backend/` when a domain grows (e.g., `frontend/features/dashboard`, `backend/features/dashboard`).
+- Name Vue components in `PascalCase` (`DashboardPanel.vue`) and FastAPI modules in `snake_case` (`dashboard_routes.py`).
+- Add new endpoints under the appropriate router module and expose them via a small API client module in `frontend/`.
+- Keep cross-cutting utilities in clearly named `shared` or `common` subfolders rather than mixing them into feature folders.
