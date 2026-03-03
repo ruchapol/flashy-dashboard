@@ -1,0 +1,39 @@
+---
+description: Prefer absolute imports for backend (FastAPI) and frontend (Vue) code instead of relative paths.
+alwaysApply: true
+---
+
+# Import Style — Avoid Relative Imports
+
+## Backend (FastAPI / Python)
+
+- **Use absolute imports from the top-level `app` package.**
+- **Avoid** relative imports like `from . import x` or `from ..db import mongo`.
+
+```python
+# ✅ GOOD — absolute import
+from app.db.mongo import get_database
+from app.core.config import get_settings
+
+# ❌ BAD — relative imports
+from .db.mongo import get_database
+from ..core.config import get_settings
+```
+
+## Frontend (Vue / TypeScript)
+
+- **Prefer absolute-style imports from the app root** (e.g., using configured aliases) instead of deep `../` chains.
+- **Avoid** relative imports that walk up multiple levels like `../../components/Foo.vue`.
+
+```ts
+// ✅ GOOD — absolute-style import (once alias is configured)
+import GraphCard from "@/components/GraphCard.vue";
+import { useTimelineStore } from "@/features/timeline/stores/useTimelineStore";
+
+// ❌ BAD — fragile relative imports
+import GraphCard from "../../components/GraphCard.vue";
+import { useTimelineStore } from "../stores/useTimelineStore";
+```
+
+Keep imports stable by treating `app/` (backend) and the frontend `src/` root as the primary import bases, avoiding relative paths except for very local, same-folder files.
+
