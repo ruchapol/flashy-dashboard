@@ -1,0 +1,18 @@
+---
+description: Always use Python virtualenv for backend commands
+alwaysApply: true
+---
+
+# Python Virtualenv Usage (Backend)
+
+- **All Python backend commands must assume a virtual environment is used.**
+- Do **not** install packages or run the app using the system Python directly (e.g. `pip install ...`, `uvicorn ...`) from the project root.
+- Instead, treat the venv as mandatory:
+  - Activate it first (e.g. on Windows/PowerShell):
+    - `.\.venv\Scripts\Activate.ps1`
+  - Then run `pip install -r backend/requirements.txt` and `uvicorn app.main:app --reload --port 8000` from within the activated environment.
+- When suggesting or documenting commands, always:
+  - Include venv creation/activation steps if they may not exist yet.
+  - Clearly scope `pip` and `python` commands to the active venv.
+- Prefer **showing commands for the user to run in their shell** over executing `pip`/`uvicorn` directly via tools, so the user’s venv and environment stay in control.
+
