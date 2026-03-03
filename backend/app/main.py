@@ -2,6 +2,7 @@ from contextlib import asynccontextmanager
 
 from fastapi import FastAPI
 
+from app.api import auth
 from app.core.config import get_settings
 from app.db.mongo import mongo_client_manager
 
@@ -23,6 +24,8 @@ def create_app() -> FastAPI:
     @app.get("/health", tags=["health"])
     async def health() -> dict:
         return {"status": "ok"}
+
+    app.include_router(auth.router)
 
     return app
 

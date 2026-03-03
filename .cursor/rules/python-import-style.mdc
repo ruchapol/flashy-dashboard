@@ -1,0 +1,31 @@
+---
+description: Enforce Python import placement at top of file
+alwaysApply: true
+---
+
+# Python Import Placement
+
+- **All `import` and `from ... import ...` statements must be at the top of the file**, before any executable code, functions, or class definitions.
+- **Do not place imports inside functions, methods, or code blocks** except in truly exceptional cases where:
+  - The import would cause an expensive or optional dependency to load for every request, and
+  - The code path is rarely executed, and
+  - A short comment explains why the local import is required.
+
+## Examples
+
+```python
+# ✅ GOOD — imports at top of file
+from app.services.auth_service import create_access_token
+
+
+def issue_token(user: UserInDB) -> Token:
+    return create_access_token(user)
+```
+
+```python
+# ❌ BAD — import inside function
+def issue_token(user: UserInDB) -> Token:
+    from app.services.auth_service import create_access_token
+
+    return create_access_token(user)
+```
