@@ -2,16 +2,8 @@ from datetime import datetime
 
 from bson import ObjectId
 from motor.motor_asyncio import AsyncIOMotorDatabase
-from passlib.context import CryptContext
 
-from app.schemas.user import Role, UserCreate, UserInDB
-
-
-pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
-
-
-def _hash_password(password: str) -> str:
-    return pwd_context.hash(password)
+from app.schemas.user import Role, UserCreate, UserInDB, UserInDBWithPasswordHash
 
 
 async def get_user_by_email(db: AsyncIOMotorDatabase, email: str) -> UserInDB | None:
@@ -25,6 +17,24 @@ async def get_user_by_email(db: AsyncIOMotorDatabase, email: str) -> UserInDB | 
         email=doc["email"],
         role=doc.get("role", "user"),
         created_at=doc["created_at"],
+    )
+
+
+async def get_user_auth_by_email(
+    db: AsyncIOMotorDatabase,
+    email: str,
+) -> UserInDBWithPasswordHash | None:
+    user_collection = db["users"]
+    doc = await user_collection.find_one({"email": email})
+    if not doc:
+        return None
+    return UserInDBWithPasswordHash(
+        id=str(doc["_id"]),
+        username=doc["username"],
+        email=doc["email"],
+        role=doc.get("role", "user"),
+        created_at=doc["created_at"],
+        password_hash=doc["password_hash"],
     )
 
 
@@ -49,6 +59,7 @@ async def get_user_by_id(db: AsyncIOMotorDatabase, user_id: str) -> UserInDB | N
 async def create_user(
     db: AsyncIOMotorDatabase,
     user_in: UserCreate,
+    password_hash: str,
     role: Role = "user",
 ) -> UserInDB:
     now = datetime.utcnow()
@@ -56,7 +67,7 @@ async def create_user(
     doc = {
         "username": user_in.username,
         "email": user_in.email,
-        "password_hash": _hash_password(user_in.password),
+        "password_hash": password_hash,
         "role": role,
         "created_at": now,
     }
@@ -68,24 +79,3 @@ async def create_user(
         role=role,
         created_at=now,
     )
-
-
-async def verify_user_credentials(
-    db: AsyncIOMotorDatabase,
-    email: str,
-    password: str,
-) -> UserInDB | None:
-    user_collection = db["users"]
-    doc = await user_collection.find_one({"email": email})
-    if not doc:
-        return None
-    if not pwd_context.verify(password, doc["password_hash"]):
-        return None
-    return UserInDB(
-        id=str(doc["_id"]),
-        username=doc["username"],
-        email=doc["email"],
-        role=doc.get("role", "user"),
-        created_at=doc["created_at"],
-    )
-

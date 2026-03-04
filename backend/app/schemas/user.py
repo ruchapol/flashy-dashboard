@@ -22,6 +22,10 @@ class UserInDB(UserBase):
     created_at: datetime
 
 
+class UserInDBWithPasswordHash(UserInDB):
+    password_hash: str
+
+
 class UserPublic(UserBase):
     id: str
     role: Role

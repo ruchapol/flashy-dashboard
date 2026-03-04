@@ -1,0 +1,26 @@
+---
+description: Repositories are DB-only (no business logic)
+globs: backend/app/repositories/**/*.py
+alwaysApply: false
+---
+
+# Backend repositories: DB access only
+
+- Repositories are responsible for **MongoDB queries/inserts/updates/deletes only**.
+- Do **not** put business logic in repositories (e.g., password hashing/verification, authorization checks, token creation, input validation beyond basic query-shaping).
+- Put business logic in `backend/app/services/`, and keep routers focused on request/response wiring.
+
+## Example: password hashing
+
+```python
+# ❌ BAD (repository)
+from passlib.context import CryptContext
+
+pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
+password_hash = pwd_context.hash(user_in.password)
+await db["users"].insert_one({"password_hash": password_hash})
+
+# ✅ GOOD (service + repository)
+password_hash = hash_password(user_in.password)  # service
+await user_repository.create_user(db, user_in, password_hash=password_hash)  # repository
+```
