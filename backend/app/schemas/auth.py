@@ -1,4 +1,4 @@
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 
 from pydantic import BaseModel
 
@@ -14,5 +14,5 @@ class TokenPayload(BaseModel):
 
 
 def create_expiry(minutes: int) -> datetime:
-    return datetime.utcnow() + timedelta(minutes=minutes)
+    return datetime.now(timezone.utc) + timedelta(minutes=minutes)
 

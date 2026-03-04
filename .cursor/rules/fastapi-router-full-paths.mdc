@@ -1,0 +1,25 @@
+---
+description: FastAPI routers: prefer full URL paths in decorators (no router prefix)
+globs: backend/app/api/**/*.py
+alwaysApply: false
+---
+
+# FastAPI router paths: avoid APIRouter prefix
+
+Prefer **full URL paths** on each route decorator and use `APIRouter` for `tags` only (and other metadata), not `prefix`.
+
+```python
+# ❌ BAD — router prefix hides actual route paths
+router = APIRouter(prefix="/posts", tags=["posts"])
+
+@router.post("")
+async def create_post(): ...
+```
+
+```python
+# ✅ GOOD — full paths are explicit
+router = APIRouter(tags=["posts"])
+
+@router.post("/posts")
+async def create_post(): ...
+```

@@ -1,0 +1,38 @@
+---
+description: Datetime standard: use GMT+7 (Asia/Bangkok) timezone-aware datetimes
+globs: backend/**/*.py
+alwaysApply: false
+---
+
+# Datetime standard: GMT+7
+
+- Use **timezone-aware** `datetime` values.
+- Treat the project’s application timezone as **GMT+7**, using the IANA zone **`Asia/Bangkok`** (recommended over fixed offsets).
+- Avoid comparing or storing **naive** datetimes (`tzinfo is None`).
+
+## Preferred patterns (Python)
+
+```python
+from datetime import datetime
+from zoneinfo import ZoneInfo
+
+APP_TZ = ZoneInfo("Asia/Bangkok")  # GMT+7
+
+now_local = datetime.now(APP_TZ)
+```
+
+### Convert from UTC to GMT+7
+
+```python
+from datetime import timezone
+
+utc_dt = datetime.now(timezone.utc)
+local_dt = utc_dt.astimezone(APP_TZ)
+```
+
+### If you must handle legacy naive datetimes
+
+```python
+if dt.tzinfo is None:
+    dt = dt.replace(tzinfo=APP_TZ)
+```

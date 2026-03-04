@@ -34,6 +34,7 @@ async def create_comment(
         return None
 
     now = datetime.utcnow()
+    comment_collection = db["comments"]
     doc = {
         "post_id": post_id,
         "post_oid": post_oid,
@@ -41,6 +42,6 @@ async def create_comment(
         "created_at": now,
         "text": comment_in.text,
     }
-    result = await db["comments"].insert_one(doc)
+    result = await comment_collection.insert_one(doc)
     doc["_id"] = result.inserted_id
     return _comment_from_doc(doc)

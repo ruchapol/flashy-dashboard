@@ -33,6 +33,7 @@ def _post_from_doc(doc: dict) -> PostInDB:
 
 async def create_post(db: AsyncIOMotorDatabase, author_id: str, post_in: PostCreate) -> PostInDB:
     now = datetime.utcnow()
+    post_collection = db["posts"]
     doc = {
         "author_id": author_id,
         "created_at": now,
@@ -46,7 +47,7 @@ async def create_post(db: AsyncIOMotorDatabase, author_id: str, post_in: PostCre
         "like_count": 0,
         "comment_count": 0,
     }
-    result = await db["posts"].insert_one(doc)
+    result = await post_collection.insert_one(doc)
     doc["_id"] = result.inserted_id
     return _post_from_doc(doc)
 
@@ -55,7 +56,8 @@ async def get_post_by_id(db: AsyncIOMotorDatabase, post_id: str) -> PostInDB | N
     oid = _to_object_id(post_id)
     if oid is None:
         return None
-    doc = await db["posts"].find_one({"_id": oid})
+    post_collection = db["posts"]
+    doc = await post_collection.find_one({"_id": oid})
     if not doc:
         return None
     return _post_from_doc(doc)
@@ -70,15 +72,16 @@ async def update_post(
     if oid is None:
         return None
 
+    post_collection = db["posts"]
     update: dict = {}
     for field, value in post_update.model_dump(exclude_unset=True).items():
         update[field] = value
 
     if not update:
-        doc = await db["posts"].find_one({"_id": oid})
+        doc = await post_collection.find_one({"_id": oid})
         return _post_from_doc(doc) if doc else None
 
-    doc = await db["posts"].find_one_and_update(
+    doc = await post_collection.find_one_and_update(
         {"_id": oid},
         {"$set": update},
         return_document=ReturnDocument.AFTER,
@@ -92,7 +95,8 @@ async def increment_comment_count(db: AsyncIOMotorDatabase, post_id: str, delta:
     oid = _to_object_id(post_id)
     if oid is None:
         return False
-    result = await db["posts"].update_one({"_id": oid}, {"$inc": {"comment_count": delta}})
+    post_collection = db["posts"]
+    result = await post_collection.update_one({"_id": oid}, {"$inc": {"comment_count": delta}})
     return result.matched_count == 1
 
 
@@ -100,5 +104,6 @@ async def increment_like_count(db: AsyncIOMotorDatabase, post_id: str, delta: in
     oid = _to_object_id(post_id)
     if oid is None:
         return False
-    result = await db["posts"].update_one({"_id": oid}, {"$inc": {"like_count": delta}})
+    post_collection = db["posts"]
+    result = await post_collection.update_one({"_id": oid}, {"$inc": {"like_count": delta}})
     return result.matched_count == 1

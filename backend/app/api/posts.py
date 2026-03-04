@@ -10,10 +10,10 @@ from app.schemas.user import UserInDB
 from app.services import post_service
 
 
-router = APIRouter(prefix="/posts", tags=["posts"])
+router = APIRouter(tags=["posts"])
 
 
-@router.post("", response_model=PostPublic, status_code=status.HTTP_201_CREATED)
+@router.post("/posts", response_model=PostPublic, status_code=status.HTTP_201_CREATED)
 async def create_post(
     post_in: PostCreate,
     db: AsyncIOMotorDatabase = Depends(get_database),
@@ -23,7 +23,7 @@ async def create_post(
     return PostPublic(**post.model_dump())
 
 
-@router.patch("/{post_id}", response_model=PostPublic)
+@router.patch("/posts/{post_id}", response_model=PostPublic)
 async def edit_post(
     post_id: str,
     post_update: PostUpdate,
@@ -40,7 +40,11 @@ async def edit_post(
     return PostPublic(**post.model_dump())
 
 
-@router.post("/{post_id}/comments", response_model=CommentPublic, status_code=status.HTTP_201_CREATED)
+@router.post(
+    "/posts/{post_id}/comments",
+    response_model=CommentPublic,
+    status_code=status.HTTP_201_CREATED,
+)
 async def add_comment(
     post_id: str,
     comment_in: CommentCreate,
@@ -53,7 +57,7 @@ async def add_comment(
     return CommentPublic(**comment.model_dump())
 
 
-@router.post("/{post_id}/likes", response_model=LikePublic, status_code=status.HTTP_201_CREATED)
+@router.post("/posts/{post_id}/likes", response_model=LikePublic, status_code=status.HTTP_201_CREATED)
 async def like_post(
     post_id: str,
     db: AsyncIOMotorDatabase = Depends(get_database),
@@ -65,7 +69,7 @@ async def like_post(
     return LikePublic(**like.model_dump())
 
 
-@router.delete("/{post_id}/likes", status_code=status.HTTP_204_NO_CONTENT)
+@router.delete("/posts/{post_id}/likes", status_code=status.HTTP_204_NO_CONTENT)
 async def unlike_post(
     post_id: str,
     db: AsyncIOMotorDatabase = Depends(get_database),

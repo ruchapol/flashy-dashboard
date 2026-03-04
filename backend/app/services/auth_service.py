@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import datetime, timezone
 
 from jose import JWTError, jwt
 from motor.motor_asyncio import AsyncIOMotorDatabase
@@ -40,7 +40,11 @@ async def get_user_from_token(db: AsyncIOMotorDatabase, token: str) -> UserInDB 
     except (JWTError, ValueError):
         return None
 
-    if payload.exp < datetime.utcnow():
+    now = datetime.now(timezone.utc)
+    exp = payload.exp
+    if exp.tzinfo is None:
+        exp = exp.replace(tzinfo=timezone.utc)
+    if exp < now:
         return None
 
     return await user_repository.get_user_by_id(db, payload.sub)

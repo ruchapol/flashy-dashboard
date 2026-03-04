@@ -1,0 +1,22 @@
+---
+description: Mongo repositories should use explicit <name>_collection variables (avoid db["name"] scattered)
+globs: backend/app/repositories/**/*.py
+alwaysApply: false
+---
+
+# Mongo collection variables in repositories
+
+Inside repositories, avoid calling `db["collection"]` repeatedly at each query site. Prefer binding the collection once to an explicit variable like `<domain>_collection`.
+
+```python
+# ❌ BAD
+doc = await db["users"].find_one({"email": email})
+await db["users"].insert_one(doc)
+```
+
+```python
+# ✅ GOOD
+user_collection = db["users"]
+doc = await user_collection.find_one({"email": email})
+await user_collection.insert_one(doc)
+```
