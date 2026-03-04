@@ -16,6 +16,8 @@ class Settings(BaseSettings):
     jwt_algorithm: str
     access_token_expires_minutes: int
 
+    app_timezone: str
+
     class Config:
         env_file = ".env"
         env_file_encoding = "utf-8"
