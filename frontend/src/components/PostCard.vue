@@ -27,13 +27,16 @@ const props = defineProps<{ post: PostPublic }>();
 
 const SVG_WIDTH = 260;
 const SVG_HEIGHT = 120;
-const SAMPLE_POINTS = 60;
+const SAMPLE_POINTS = 1000;
 
 function makeEvaluator(expr: string): ((x: number) => number) | null {
   try {
+    // Normalize common math syntax: treat ^ as exponent for preview purposes.
+    const normalized = expr.replace(/\^/g, "**");
+
     // Allow basic Math.* functions and x; this is for a playground-style preview.
     // eslint-disable-next-line no-new-func
-    const fn = new Function("x", "with (Math) { return " + expr + "; }") as (
+    const fn = new Function("x", "with (Math) { return " + normalized + "; }") as (
       x: number
     ) => number;
     // Smoke test
