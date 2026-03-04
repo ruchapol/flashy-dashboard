@@ -1,3 +1,4 @@
+from typing import List
 from fastapi import APIRouter, Depends, HTTPException, status
 from motor.motor_asyncio import AsyncIOMotorDatabase
 
@@ -12,6 +13,14 @@ from app.services import post_service
 
 router = APIRouter(tags=["posts"])
 
+
+@router.get("/posts", response_model=List[PostPublic], status_code=status.HTTP_200_OK)
+async def get_post(
+    db: AsyncIOMotorDatabase = Depends(get_database),
+    user: UserInDB = Depends(get_current_user),
+) -> List[PostPublic]:
+    posts = await post_service.get_posts(db)
+    return [PostPublic(**post.model_dump()) for post in posts]
 
 @router.post("/posts", response_model=PostPublic, status_code=status.HTTP_201_CREATED)
 async def create_post(

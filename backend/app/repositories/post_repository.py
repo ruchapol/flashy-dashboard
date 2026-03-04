@@ -31,6 +31,16 @@ def _post_from_doc(doc: dict) -> PostInDB:
     )
 
 
+async def get_posts(db: AsyncIOMotorDatabase) -> list[PostInDB]:
+    post_collection = db["posts"]
+    docs = await post_collection.find().sort("created_at", -1).to_list(length=None)
+    return [_post_from_doc(doc) for doc in docs]
+
+async def get_posts_by_author_id(db: AsyncIOMotorDatabase, author_id: str) -> list[PostInDB]:
+    post_collection = db["posts"]
+    docs = await post_collection.find({"author_id": author_id}).sort("created_at", -1).to_list(length=None)
+    return [_post_from_doc(doc) for doc in docs]
+
 async def create_post(db: AsyncIOMotorDatabase, author_id: str, post_in: PostCreate) -> PostInDB:
     now = datetime.utcnow()
     post_collection = db["posts"]
