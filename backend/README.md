@@ -20,3 +20,9 @@ pip install -r requirements.txt
 uvicorn app.main:app --reload --port 8000
 ```
 
+After the server starts:
+
+- Swagger UI: `http://localhost:8000/docs`
+- OpenAPI JSON: `http://localhost:8000/openapi.json`
+- Health check: `http://localhost:8000/health`
+

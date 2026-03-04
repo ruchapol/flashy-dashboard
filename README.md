@@ -20,7 +20,12 @@ cd backend
 
 Then open `http://localhost:8000/health` to verify the API is running.
 
-MongoDB connection details and JWT settings are configured via environment variables; see `backend/app/core/config.py` for defaults.
+API docs:
+
+- Swagger UI: `http://localhost:8000/docs`
+- OpenAPI JSON: `http://localhost:8000/openapi.json`
+
+MongoDB connection details, JWT settings, and timezone are configured via `backend/app/config.yml` (with optional env overrides); see `backend/app/core/config.py`.
 
 ## Frontend (Vue + Vite)
 
