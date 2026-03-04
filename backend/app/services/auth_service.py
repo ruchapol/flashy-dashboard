@@ -4,21 +4,16 @@ from jose import JWTError, jwt
 from motor.motor_asyncio import AsyncIOMotorDatabase
 
 from app.core.config import get_settings
-from app.repositories.user_repository import (
-    create_user,
-    get_user_by_id,
-    get_user_by_email,
-    verify_user_credentials,
-)
+import app.repositories.user_repository as user_repository
 from app.schemas.auth import Token, TokenPayload, create_expiry
 from app.schemas.user import UserCreate, UserInDB
 
 
 async def register_user(db: AsyncIOMotorDatabase, user_in: UserCreate) -> UserInDB:
-    existing = await get_user_by_email(db, user_in.email)
+    existing = await user_repository.get_user_by_email(db, user_in.email)
     if existing:
         raise ValueError("Email already registered")
-    return await create_user(db, user_in)
+    return await user_repository.create_user(db, user_in)
 
 
 async def authenticate_user(
@@ -26,7 +21,7 @@ async def authenticate_user(
     email: str,
     password: str,
 ) -> UserInDB | None:
-    return await verify_user_credentials(db, email, password)
+    return await user_repository.verify_user_credentials(db, email, password)
 
 
 def create_access_token(user: UserInDB) -> Token:
@@ -48,5 +43,5 @@ async def get_user_from_token(db: AsyncIOMotorDatabase, token: str) -> UserInDB 
     if payload.exp < datetime.utcnow():
         return None
 
-    return await get_user_by_id(db, payload.sub)
+    return await user_repository.get_user_by_id(db, payload.sub)
 

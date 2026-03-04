@@ -1,0 +1,25 @@
+---
+description: Prefer importing repository modules as <name>_repository aliases in backend Python
+globs: backend/**/*.py
+alwaysApply: false
+---
+
+# Repository imports: prefer module alias
+
+When a service/router uses a repository, prefer importing the **repository module** and aliasing it as `<name>_repository` (or `<domain>_repository`) instead of importing many functions directly. This keeps call sites explicit, reduces name collisions, and makes refactors safer.
+
+```python
+# ❌ BAD — many symbols pulled into local scope
+from app.repositories.user_repository import create_user, get_user_by_email
+
+existing = await get_user_by_email(db, email)
+user = await create_user(db, user_in)
+```
+
+```python
+# ✅ GOOD — explicit module alias
+import app.repositories.user_repository as user_repository
+
+existing = await user_repository.get_user_by_email(db, email)
+user = await user_repository.create_user(db, user_in)
+```
