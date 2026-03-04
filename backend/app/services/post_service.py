@@ -11,6 +11,14 @@ from app.schemas.post import PostCreate, PostInDB, PostUpdate
 async def get_posts(db: AsyncIOMotorDatabase) -> list[PostInDB]:
     return await post_repository.get_posts(db)
 
+
+async def get_posts_page(
+    db: AsyncIOMotorDatabase,
+    limit: int,
+    cursor: str | None = None,
+) -> tuple[list[PostInDB], str | None]:
+    return await post_repository.get_posts_page(db, limit=limit, cursor=cursor)
+
 async def create_post(db: AsyncIOMotorDatabase, author_id: str, post_in: PostCreate) -> PostInDB:
     return await post_repository.create_post(db, author_id, post_in)
 

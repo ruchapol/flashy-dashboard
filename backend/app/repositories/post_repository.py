@@ -31,10 +31,42 @@ def _post_from_doc(doc: dict) -> PostInDB:
     )
 
 
-async def get_posts(db: AsyncIOMotorDatabase) -> list[PostInDB]:
+async def get_posts(
+    db: AsyncIOMotorDatabase,
+) -> list[PostInDB]:
     post_collection = db["posts"]
     docs = await post_collection.find().sort("created_at", -1).to_list(length=None)
     return [_post_from_doc(doc) for doc in docs]
+
+
+async def get_posts_page(
+    db: AsyncIOMotorDatabase,
+    limit: int,
+    cursor: str | None = None,
+) -> tuple[list[PostInDB], str | None]:
+    post_collection = db["posts"]
+
+    query: dict = {}
+    if cursor:
+        cursor_oid = _to_object_id(cursor)
+        if cursor_oid is not None:
+            query["_id"] = {"$lt": cursor_oid}
+
+    docs = (
+        await post_collection.find(query)
+        .sort("_id", -1)
+        .limit(limit + 1)
+        .to_list(length=limit + 1)
+    )
+
+    items_docs = docs[:limit]
+    items = [_post_from_doc(doc) for doc in items_docs]
+
+    next_cursor: str | None = None
+    if len(docs) > limit:
+        next_cursor = str(docs[-1]["_id"])
+
+    return items, next_cursor
 
 async def get_posts_by_author_id(db: AsyncIOMotorDatabase, author_id: str) -> list[PostInDB]:
     post_collection = db["posts"]

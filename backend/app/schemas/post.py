@@ -38,3 +38,8 @@ class PostInDB(PostBase):
 class PostPublic(PostInDB):
     pass
 
+
+class PostListResponse(BaseModel):
+    items: list[PostPublic]
+    next_cursor: str | None = None
+

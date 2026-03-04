@@ -1,12 +1,12 @@
 from typing import List
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, Query, status
 from motor.motor_asyncio import AsyncIOMotorDatabase
 
 from app.api.deps import get_current_user
 from app.db.mongo import get_database
 from app.schemas.comment import CommentCreate, CommentPublic
 from app.schemas.like import LikePublic
-from app.schemas.post import PostCreate, PostPublic, PostUpdate
+from app.schemas.post import PostCreate, PostListResponse, PostPublic, PostUpdate
 from app.schemas.user import UserInDB
 from app.services import post_service
 
@@ -14,13 +14,18 @@ from app.services import post_service
 router = APIRouter(tags=["posts"])
 
 
-@router.get("/posts", response_model=List[PostPublic], status_code=status.HTTP_200_OK)
+@router.get("/posts", response_model=PostListResponse, status_code=status.HTTP_200_OK)
 async def get_post(
     db: AsyncIOMotorDatabase = Depends(get_database),
     user: UserInDB = Depends(get_current_user),
-) -> List[PostPublic]:
-    posts = await post_service.get_posts(db)
-    return [PostPublic(**post.model_dump()) for post in posts]
+    limit: int = Query(20, ge=1, le=100),
+    cursor: str | None = Query(None),
+) -> PostListResponse:
+    posts, next_cursor = await post_service.get_posts_page(db, limit=limit, cursor=cursor)
+    return PostListResponse(
+        items=[PostPublic(**post.model_dump()) for post in posts],
+        next_cursor=next_cursor,
+    )
 
 @router.post("/posts", response_model=PostPublic, status_code=status.HTTP_201_CREATED)
 async def create_post(
