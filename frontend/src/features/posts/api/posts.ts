@@ -35,18 +35,62 @@ async function handleResponse<T>(res: Response): Promise<T> {
   return data;
 }
 
+export function buildPostsUrl(limit: number, cursor?: string): string {
+  const params = new URLSearchParams({ limit: String(limit) });
+  if (cursor) params.set("cursor", cursor);
+
+  // Use the frontend proxy by default (Vite proxies /api -> backend)
+  const base = API_BASE.replace(/\/$/, "");
+  return `${base}/posts?${params.toString()}`;
+}
+
 export async function fetchPosts(
   token: string | null,
   cursor?: string,
   limit = 20
 ): Promise<{ items: PostPublic[]; next_cursor: string | null }> {
-  const url = new URL(`${API_BASE}/posts`);
-  url.searchParams.set("limit", String(limit));
-  if (cursor) url.searchParams.set("cursor", cursor);
+  const url = buildPostsUrl(limit, cursor);
   const headers: Record<string, string> = {};
   if (token) headers.Authorization = `Bearer ${token}`;
-  const res = await fetch(url.toString(), { headers });
+  const res = await fetch(url, { headers });
   return handleResponse(res);
+}
+
+export async function fetchPostsMock(
+  _token: string | null,
+  cursor?: string,
+  limit = 20
+): Promise<{ items: PostPublic[]; next_cursor: string | null }> {
+  const url = buildPostsUrl(limit, cursor);
+
+  console.groupCollapsed("[mock] fetchPosts");
+  console.log("API_BASE", API_BASE);
+  console.log("cursor", cursor);
+  console.log("limit", limit);
+  console.log("built url", url);
+  console.groupEnd();
+
+  const now = new Date().toISOString();
+  const items: PostPublic[] = Array.from({ length: Math.min(limit, 3) }).map(
+    (_, i) => ({
+      id: `mock-${cursor ?? "first"}-${i}`,
+      author_id: "mock-author",
+      equation_text: "sin(x)",
+      x_min: -10,
+      x_max: 10,
+      y_min: null,
+      y_max: null,
+      y_auto: true,
+      caption: "Mock post (no network)",
+      created_at: now,
+      like_count: 0,
+      comment_count: 0,
+    })
+  );
+
+  // Simulate pagination
+  const next_cursor = cursor ? null : "mock-next";
+  return { items, next_cursor };
 }
 
 export async function fetchPostById(

@@ -54,6 +54,38 @@ const loadingMore = ref(false);
 const error = ref("");
 const hasMore = ref(true);
 
+async function loadAllPosts() {
+  try {
+    console.log("loadAllPosts() called");
+    const token = auth.token ?? null;
+    console.log("loadAllPosts() called token", token);
+    console.log("loadAllPosts() called nextCursor.value", nextCursor.value);
+    const result = await postsApi.fetchPosts(
+      token,
+      nextCursor.value ?? undefined,
+      20
+    );
+    console.log("loadAllPosts() called result", result);
+    posts.value = result.items;
+    console.log("loadAllPosts() called posts.value", posts.value);
+    nextCursor.value = result.next_cursor;
+    console.log("loadAllPosts() called nextCursor.value", nextCursor.value);
+    hasMore.value = !!result.next_cursor;
+    console.log("loadAllPosts() called hasMore.value", hasMore.value);
+  } catch (e) {
+    const msg = e instanceof Error ? e.message : "Failed to load posts";
+    console.error(msg);
+    error.value = msg;
+  } finally {
+    loading.value = false;
+    console.log("loadAllPosts() finished");
+  }
+}
+onMounted(() => {
+  loadAllPosts();
+  console.log("onMounted() called");
+});
+
 async function load(append: boolean) {
   if (append) loadingMore.value = true;
   else loading.value = true;
@@ -83,7 +115,7 @@ function loadMore() {
   load(true);
 }
 
-onMounted(() => load(false));
+// onMounted(() => load(false));
 </script>
 
 <style scoped>
