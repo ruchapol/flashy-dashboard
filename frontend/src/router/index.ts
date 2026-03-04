@@ -8,7 +8,12 @@ import RegisterView from "../views/RegisterView.vue";
 
 const routes: RouteRecordRaw[] = [
   { path: "/", name: "timeline", component: TimelineView },
-  { path: "/create", name: "create", component: CreateView },
+  {
+    path: "/create",
+    name: "create",
+    component: CreateView,
+    meta: { requiresAuth: true },
+  },
   { path: "/post/:id", name: "post-detail", component: PostDetailView, props: true },
   { path: "/login", name: "login", component: LoginView },
   { path: "/register", name: "register", component: RegisterView },

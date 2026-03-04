@@ -1,13 +1,21 @@
 <template>
   <div class="app-shell">
     <header class="top-bar">
-      <div class="logo">Flashy Dashboard</div>
+      <RouterLink to="/" class="logo">Flashy Dashboard</RouterLink>
       <nav class="nav-actions">
-        <RouterLink to="/create" class="primary-button">Create Equation</RouterLink>
+        <template v-if="auth.isAuthenticated">
+          <RouterLink to="/create" class="primary-button">Create Equation</RouterLink>
+          <div class="user-menu">
+            <span class="avatar-circle">{{ avatarLetter }}</span>
+            <span class="username">{{ auth.user?.username }}</span>
+            <button type="button" class="ghost-btn" @click="auth.logout()">Log out</button>
+          </div>
+        </template>
+        <template v-else>
+          <RouterLink to="/login" class="ghost-button">Log in</RouterLink>
+          <RouterLink to="/register" class="primary-button">Sign up</RouterLink>
+        </template>
       </nav>
-      <div class="user-avatar">
-        <span class="avatar-circle">U</span>
-      </div>
     </header>
 
     <main class="app-main">
@@ -16,7 +24,15 @@
   </div>
 </template>
 
-<script setup lang="ts"></script>
+<script setup lang="ts">
+import { computed } from "vue";
+import { useAuthStore } from "@/features/auth/stores/useAuthStore";
+
+const auth = useAuthStore();
+const avatarLetter = computed(() =>
+  auth.user?.username?.charAt(0)?.toUpperCase() ?? "U"
+);
+</script>
 
 <style scoped>
 .app-shell {
@@ -64,7 +80,11 @@
   filter: brightness(1.05);
 }
 
-.user-avatar {
+.logo {
+  text-decoration: none;
+}
+
+.user-menu {
   display: flex;
   align-items: center;
   gap: 0.5rem;
@@ -80,6 +100,39 @@
   justify-content: center;
   font-size: 0.8rem;
   font-weight: 600;
+}
+
+.username {
+  font-size: 0.85rem;
+  color: #e5e7eb;
+}
+
+.ghost-button {
+  padding: 0.4rem 0.9rem;
+  border-radius: 999px;
+  border: 1px solid rgba(148, 163, 184, 0.8);
+  color: #e5e7eb;
+  font-size: 0.85rem;
+  text-decoration: none;
+}
+
+.ghost-button:hover {
+  background: rgba(148, 163, 184, 0.15);
+}
+
+.ghost-btn {
+  padding: 0.35rem 0.75rem;
+  border-radius: 999px;
+  border: 1px solid rgba(148, 163, 184, 0.6);
+  background: transparent;
+  color: #94a3b8;
+  font-size: 0.8rem;
+  cursor: pointer;
+}
+
+.ghost-btn:hover {
+  background: rgba(148, 163, 184, 0.15);
+  color: #e5e7eb;
 }
 
 .app-main {

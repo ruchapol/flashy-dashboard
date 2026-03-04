@@ -1,0 +1,46 @@
+---
+description: Use TypeScript types effectively and avoid the any type
+globs: "**/*.ts,**/*.tsx,**/*.vue"
+alwaysApply: false
+---
+
+# TypeScript Types
+
+- **Use TypeScript’s type system**: Prefer explicit types for function parameters, return values, and public APIs. Rely on inference where it’s obvious (e.g. `const x = 1`).
+- **Avoid `any`**: Do not use `any` unless there is a documented, narrow reason (e.g. typing a truly dynamic third-party API). Use `unknown` and narrow with type guards, or define proper interfaces/types instead.
+- **Prefer interfaces or type aliases** for objects and API shapes so they can be reused and checked.
+- **Type external data**: When parsing JSON or handling API responses, validate/assert to a known type (e.g. with a schema or type guard) instead of casting to `any`.
+
+## Examples
+
+```typescript
+// ❌ BAD — any disables type checking
+function handlePayload(data: any) {
+  return data.items.map((x: any) => x.id);
+}
+
+// ✅ GOOD — explicit types
+interface Payload {
+  items: { id: string }[];
+}
+function handlePayload(data: Payload) {
+  return data.items.map((x) => x.id);
+}
+```
+
+```typescript
+// ❌ BAD — any on catch
+try {
+  await fetchUser();
+} catch (e: any) {
+  console.log(e.message);
+}
+
+// ✅ GOOD — unknown + type guard
+try {
+  await fetchUser();
+} catch (e: unknown) {
+  const msg = e instanceof Error ? e.message : String(e);
+  console.log(msg);
+}
+```

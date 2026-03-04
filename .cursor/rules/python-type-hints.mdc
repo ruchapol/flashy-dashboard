@@ -1,0 +1,48 @@
+---
+description: Prefer Python type hints wherever practical (backend)
+globs: "backend/**/*.py"
+alwaysApply: false
+---
+
+# Python Type Hints (Backend)
+
+- **Type hint public functions**: Add parameter + return types for router handlers, service functions, repositories, and utilities.
+- **Use modern typing (Python 3.12)**:
+  - Prefer `X | None` over `Optional[X]`
+  - Prefer built-in generics like `list[str]`, `dict[str, int]`
+  - Prefer `collections.abc` (`Iterable`, `Mapping`, `AsyncGenerator`, etc.) for protocols
+- **Avoid `Any` when possible**:
+  - Prefer `object` for “unknown value” and narrow via `isinstance(...)`
+  - Use `TypedDict` / Pydantic models for structured dicts instead of `dict[str, Any]`
+  - Use `TypeVar`/`Generic` when writing reusable helpers
+- **Model boundaries**:
+  - Keep FastAPI request/response types explicit (`-> UserPublic`, `-> Token`, etc.)
+  - Use your Pydantic models (`UserCreate`, `PostPublic`, …) instead of raw dicts when passing data between layers
+
+## Examples
+
+```python
+# ❌ BAD — untyped helper hides intent and hurts editor support
+async def _create_token_for_user(user):
+    return create_access_token(user)
+
+# ✅ GOOD — explicit input/output types
+async def _create_token_for_user(user: UserInDB) -> Token:
+    return create_access_token(user)
+```
+
+```python
+# ❌ BAD — Any everywhere
+def parse_payload(data: dict[str, Any]) -> Any:
+    return data["items"]
+
+# ✅ GOOD — unknown + narrowing (or use a Pydantic model)
+def parse_payload(data: object) -> list[str]:
+    if not isinstance(data, dict):
+        raise ValueError("payload must be an object")
+    items = data.get("items")
+    if not isinstance(items, list) or not all(isinstance(x, str) for x in items):
+        raise ValueError("items must be list[str]")
+    return items
+```
+
