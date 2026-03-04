@@ -2,7 +2,7 @@ from contextlib import asynccontextmanager
 
 from fastapi import FastAPI
 
-from app.api import auth
+from app.api import auth, posts
 from app.core.config import get_settings
 from app.db.mongo import mongo_client_manager
 
@@ -26,6 +26,7 @@ def create_app() -> FastAPI:
         return {"status": "ok"}
 
     app.include_router(auth.router)
+    app.include_router(posts.router)
 
     return app
 
