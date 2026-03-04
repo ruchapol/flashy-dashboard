@@ -1,5 +1,5 @@
 <template>
-  <article class="post-card">
+  <article :class="['post-card', { 'post-card--borderless': borderless }]">
     <div class="post-header">
       <span class="equation">{{ post.equation_text }}</span>
       <span class="meta">x ∈ [{{ post.x_min }}, {{ post.x_max }}]</span>
@@ -14,7 +14,7 @@
     <p v-if="post.caption" class="caption">{{ post.caption }}</p>
     <div class="post-footer">
       <span class="stats">{{ post.like_count }} likes · {{ post.comment_count }} comments</span>
-      <RouterLink :to="postLink" class="link">View</RouterLink>
+    <RouterLink v-if="showView !== false" :to="postLink" class="link">View</RouterLink>
     </div>
   </article>
 </template>
@@ -23,7 +23,11 @@
 import { computed } from "vue";
 import type { PostPublic } from "@/features/posts/api/posts";
 
-const props = defineProps<{ post: PostPublic }>();
+const props = defineProps<{
+  post: PostPublic;
+  borderless?: boolean;
+  showView?: boolean;
+}>();
 
 const SVG_WIDTH = 260;
 const SVG_HEIGHT = 120;
@@ -111,6 +115,12 @@ const postLink = computed(() => `/post/${props.post.id}`);
   border-radius: 0.75rem;
   background: rgba(15, 23, 42, 0.9);
   border: 1px solid rgba(148, 163, 184, 0.4);
+}
+
+.post-card--borderless {
+  padding: 0;
+  border: none;
+  background: transparent;
 }
 
 .post-header {

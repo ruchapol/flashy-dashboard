@@ -15,15 +15,8 @@
         <h1>Graph post</h1>
       </header>
 
-      <div class="card post-card">
-        <div class="post-header">
-          <span class="equation">{{ post.equation_text }}</span>
-          <span class="meta">x ∈ [{{ post.x_min }}, {{ post.x_max }}]</span>
-        </div>
-        <p v-if="post.caption" class="caption">{{ post.caption }}</p>
-        <div class="post-footer">
-          <span class="stats">{{ post.like_count }} likes · {{ post.comment_count }} comments</span>
-        </div>
+      <div class="card">
+        <PostCard :post="post" :borderless="true" :showView="false" />
       </div>
 
       <div class="card comments-section">
@@ -37,6 +30,7 @@
 <script setup lang="ts">
 import { ref, onMounted, watch } from "vue";
 import { useRoute } from "vue-router";
+import PostCard from "@/components/PostCard.vue";
 import { useAuthStore } from "@/features/auth/stores/useAuthStore";
 import * as postsApi from "@/features/posts/api/posts";
 import type { PostPublic } from "@/features/posts/api/posts";

@@ -37,6 +37,18 @@ async def create_post(
     return PostPublic(**post.model_dump())
 
 
+@router.get("/posts/{post_id}", response_model=PostPublic, status_code=status.HTTP_200_OK)
+async def get_post_by_id(
+    post_id: str,
+    db: AsyncIOMotorDatabase = Depends(get_database),
+    user: UserInDB = Depends(get_current_user),
+) -> PostPublic:
+    post = await post_service.get_post_by_id(db, post_id)
+    if not post:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Post not found")
+    return PostPublic(**post.model_dump())
+
+
 @router.patch("/posts/{post_id}", response_model=PostPublic)
 async def edit_post(
     post_id: str,

@@ -19,6 +19,10 @@ async def get_posts_page(
 ) -> tuple[list[PostInDB], str | None]:
     return await post_repository.get_posts_page(db, limit=limit, cursor=cursor)
 
+
+async def get_post_by_id(db: AsyncIOMotorDatabase, post_id: str) -> PostInDB | None:
+    return await post_repository.get_post_by_id(db, post_id)
+
 async def create_post(db: AsyncIOMotorDatabase, author_id: str, post_in: PostCreate) -> PostInDB:
     return await post_repository.create_post(db, author_id, post_in)
 
