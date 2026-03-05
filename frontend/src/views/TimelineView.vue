@@ -20,7 +20,7 @@
     <template v-else>
       <ul class="post-list">
         <li v-for="post in posts" :key="post.id">
-          <PostCard :post="post" />
+          <PostCard :post="post" :showView="true" />
         </li>
       </ul>
       <div v-if="hasMore && !loadingMore" class="load-more">
