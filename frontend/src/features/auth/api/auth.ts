@@ -29,6 +29,7 @@ async function handleResponse<T>(res: Response): Promise<T> {
   return data;
 }
 
+
 export async function register(user: UserCreate): Promise<UserPublic> {
   const res = await fetch(`${API_BASE}/auth/register`, {
     method: "POST",

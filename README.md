@@ -27,6 +27,19 @@ API docs:
 
 MongoDB connection details, JWT settings, and timezone are configured via `backend/app/config.yml` (with optional env overrides); see `backend/app/core/config.py`.
 
+### Load seed data into MongoDB
+
+You can pre-populate the database using `seed-data.json` and the backend seeding script.
+
+```bash
+# from repo root (Windows PowerShell)
+cd backend
+..\ .venv\Scripts\Activate.ps1
+python -m app.seed_db
+```
+
+This will wipe the `users`, `posts`, `comments`, and `likes` collections and insert the data from `seed-data.json`.
+
 ## Frontend (Vue + Vite)
 
 - Location: `frontend/`
