@@ -63,3 +63,7 @@ Then open the printed `http://localhost:5173` URL. You should see:
 - Implement core backend entities and API routes (`User`, `Post`, `Comment`, `Like`) based on `db-schema.md` and `tasks.md`.
 - Wire the frontend screens to those APIs (timeline feed, create equation flow, auth, comments, likes).
 
+## Feature checklist (backend + frontend)
+
+For a detailed, example-driven guide to adding new features (including backend and frontend code samples), see `FEATURE-GUIDE.md` in the repo root.
+
