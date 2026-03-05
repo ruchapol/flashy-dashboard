@@ -54,29 +54,6 @@ const loadingMore = ref(false);
 const error = ref("");
 const hasMore = ref(true);
 
-async function loadAllPosts() {
-  try {
-    const token = auth.token ?? null;
-    const result = await postsApi.fetchPosts(
-      token,
-      nextCursor.value ?? undefined,
-      20
-    );
-    posts.value = result.items;
-    nextCursor.value = result.next_cursor;
-    hasMore.value = !!result.next_cursor;
-  } catch (e) {
-    const msg = e instanceof Error ? e.message : "Failed to load posts";
-    console.error(msg);
-    error.value = msg;
-  } finally {
-    loading.value = false;
-  }
-}
-onMounted(() => {
-  loadAllPosts();
-});
-
 async function load(append: boolean) {
   if (append) loadingMore.value = true;
   else loading.value = true;
@@ -106,7 +83,7 @@ function loadMore() {
   load(true);
 }
 
-// onMounted(() => load(false));
+onMounted(() => load(false));
 </script>
 
 <style scoped>
