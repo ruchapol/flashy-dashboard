@@ -35,18 +35,52 @@ const SAMPLE_POINTS = 1000;
 
 function makeEvaluator(expr: string): ((x: number) => number) | null {
   try {
-    // Normalize common math syntax: treat ^ as exponent for preview purposes.
-    const normalized = expr.replace(/\^/g, "**");
+    // For parametric expressions "x_expr;y_expr", preview only the first part.
+    const firstPart = (expr.split(";")[0] ?? expr).trim();
 
-    // Allow basic Math.* functions and x; this is for a playground-style preview.
+    // First, normalize common "e^(...)" syntax into Math.exp(...).
+    const withExp = firstPart.replace(/\be\^\s*\(/g, "Math.exp(");
+
+    // Then normalize caret to JS exponent operator for any remaining uses.
+    const normalized = withExp.replace(/\^/g, "**");
+
+    // Fix unary-minus exponent inside Math.exp, e.g. "Math.exp(-x**2)" →
+    // "Math.exp(-(x**2))" to satisfy JS exponentiation precedence rules.
+    const finalExpr = normalized.replace(/Math\.exp\(-([^()]+)\)/g, "Math.exp(-($1))");
+
+    // eslint-disable-next-line no-console
+    console.log("[PostCard] evaluator expression", {
+      raw: expr,
+      firstPart,
+      withExp,
+      normalized,
+      finalExpr,
+    });
+
+    // Provide helpers for common math notations that aren't on Math directly:
+    // - `e`   → Math.E
+    // - `ln`  → Math.log (natural log)
+    // - `sec` → 1 / cos
+    // - `rand`→ Math.random
     // eslint-disable-next-line no-new-func
-    const fn = new Function("x", "with (Math) { return " + normalized + "; }") as (
-      x: number
-    ) => number;
+    const fn = new Function(
+      "x",
+      [
+        "const e = Math.E;",
+        "const ln = Math.log;",
+        "const rand = Math.random;",
+        "const sec = (v) => 1 / Math.cos(v);",
+        "with (Math) { return " + finalExpr + "; }",
+      ].join(" ")
+    ) as (x: number) => number;
+
     // Smoke test
     void fn(0);
     return fn;
-  } catch {
+  } catch (err) {
+    // Debug evaluator creation failures
+    // eslint-disable-next-line no-console
+    console.warn("[PostCard] makeEvaluator failed", { expr, error: err });
     return null;
   }
 }
@@ -54,7 +88,16 @@ function makeEvaluator(expr: string): ((x: number) => number) | null {
 const svgPath = computed(() => {
   const { equation_text, x_min, x_max, y_min, y_max, y_auto } = props.post;
   const evalFn = makeEvaluator(equation_text);
-  if (!evalFn || x_min === x_max) return "";
+  if (!evalFn || x_min === x_max) {
+    // eslint-disable-next-line no-console
+    console.warn("[PostCard] No evalFn or invalid x-range", {
+      equation_text,
+      x_min,
+      x_max,
+      hasEvalFn: !!evalFn,
+    });
+    return "";
+  }
 
   const xs: number[] = [];
   for (let i = 0; i < SAMPLE_POINTS; i += 1) {
@@ -67,11 +110,17 @@ const svgPath = computed(() => {
     try {
       const y = evalFn(x);
       if (Number.isFinite(y)) samples.push({ x, y });
-    } catch {
+    } catch (err) {
+      // eslint-disable-next-line no-console
+      console.warn("[PostCard] Evaluation error at x", { x, equation_text, error: err });
       // Skip bad points
     }
   }
-  if (samples.length === 0) return "";
+  if (samples.length === 0) {
+    // eslint-disable-next-line no-console
+    console.warn("[PostCard] No finite samples for equation", { equation_text });
+    return "";
+  }
 
   let minY: number;
   let maxY: number;
@@ -84,6 +133,14 @@ const svgPath = computed(() => {
     if (!Number.isFinite(minY) || !Number.isFinite(maxY) || minY === maxY) {
       minY -= 1;
       maxY += 1;
+      // eslint-disable-next-line no-console
+      console.warn("[PostCard] Adjusted Y-range due to invalid/flat data", {
+        equation_text,
+        computedMinY: minY + 1,
+        computedMaxY: maxY - 1,
+        adjustedMinY: minY,
+        adjustedMaxY: maxY,
+      });
     }
   }
 

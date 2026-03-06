@@ -373,13 +373,13 @@
     {
       "_id": "p_param_01",
       "author_id": "u_graph_artist",
-      "equation_text": "sin(t);cos(t)",
+      "equation_text": "sin(x);cos(x)",
       "x_min": -1.5,
       "x_max": 1.5,
       "y_min": -1.5,
       "y_max": 1.5,
       "y_auto": false,
-      "caption": "Parametric-style circle (x=sin t, y=cos t).",
+      "caption": "Parametric-style circle (x=sin x, y=cos x).",
       "created_at": "2026-03-03T11:44:00Z",
       "like_count": 0,
       "comment_count": 0
@@ -387,7 +387,7 @@
     {
       "_id": "p_param_02",
       "author_id": "u_graph_artist",
-      "equation_text": "cos(t);sin(2*t)",
+      "equation_text": "cos(x);sin(2*x)",
       "x_min": -1.5,
       "x_max": 1.5,
       "y_min": -1.5,
@@ -471,7 +471,7 @@
     {
       "_id": "p_spiral_01",
       "author_id": "u_graph_artist",
-      "equation_text": "t*cos(t);t*sin(t)",
+      "equation_text": "x*cos(x);x*sin(x)",
       "x_min": -10,
       "x_max": 10,
       "y_min": -10,
@@ -485,7 +485,7 @@
     {
       "_id": "p_spiral_02",
       "author_id": "u_graph_artist",
-      "equation_text": "e^(0.1*t)*cos(t);e^(0.1*t)*sin(t)",
+      "equation_text": "e^(0.1*x)*cos(x);e^(0.1*x)*sin(x)",
       "x_min": -10,
       "x_max": 10,
       "y_min": -10,
