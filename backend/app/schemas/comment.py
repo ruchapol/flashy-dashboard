@@ -19,5 +19,5 @@ class CommentInDB(CommentBase):
 
 
 class CommentPublic(CommentInDB):
-    pass
+    author_username: str
 

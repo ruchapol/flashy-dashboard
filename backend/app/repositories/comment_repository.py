@@ -45,3 +45,15 @@ async def create_comment(
     result = await comment_collection.insert_one(doc)
     doc["_id"] = result.inserted_id
     return _comment_from_doc(doc)
+
+
+async def list_comments_for_post(
+    db: AsyncIOMotorDatabase,
+    post_id: str,
+) -> list[CommentInDB]:
+    comment_collection = db["comments"]
+    cursor = comment_collection.find({"post_id": post_id}).sort("created_at", 1)
+    comments: list[CommentInDB] = []
+    async for doc in cursor:
+        comments.append(_comment_from_doc(doc))
+    return comments

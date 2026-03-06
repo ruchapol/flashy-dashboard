@@ -36,7 +36,7 @@ class PostInDB(PostBase):
 
 
 class PostPublic(PostInDB):
-    pass
+    author_username: str
 
 
 class PostListResponse(BaseModel):

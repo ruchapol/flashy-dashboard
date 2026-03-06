@@ -3,6 +3,7 @@ import { API_BASE } from "@/shared/config";
 export interface PostPublic {
   id: string;
   author_id: string;
+  author_username: string;
   equation_text: string;
   x_min: number;
   x_max: number;

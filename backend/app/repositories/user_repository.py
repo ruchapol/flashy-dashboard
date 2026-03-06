@@ -79,3 +79,31 @@ async def create_user(
         role=role,
         created_at=now,
     )
+
+
+async def get_users_by_ids(
+    db: AsyncIOMotorDatabase,
+    user_ids: list[str],
+) -> list[UserInDB]:
+    if not user_ids:
+        return []
+
+    try:
+        object_ids = [ObjectId(user_id) for user_id in user_ids]
+    except Exception:
+        return []
+
+    user_collection = db["users"]
+    cursor = user_collection.find({"_id": {"$in": object_ids}})
+    users: list[UserInDB] = []
+    async for doc in cursor:
+        users.append(
+            UserInDB(
+                id=str(doc["_id"]),
+                username=doc["username"],
+                email=doc["email"],
+                role=doc.get("role", "user"),
+                created_at=doc["created_at"],
+            )
+        )
+    return users

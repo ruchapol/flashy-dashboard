@@ -9,6 +9,7 @@ from app.schemas.like import LikePublic
 from app.schemas.post import PostCreate, PostListResponse, PostPublic, PostUpdate
 from app.schemas.user import UserInDB
 from app.services import post_service
+import app.repositories.user_repository as user_repository
 
 
 router = APIRouter(tags=["posts"])
@@ -22,10 +23,24 @@ async def get_post(
     cursor: str | None = Query(None),
 ) -> PostListResponse:
     posts, next_cursor = await post_service.get_posts_page(db, limit=limit, cursor=cursor)
+
+    author_ids = {post.author_id for post in posts}
+    authors = await user_repository.get_users_by_ids(db, list(author_ids))
+    author_by_id = {author.id: author for author in authors}
+
     return PostListResponse(
-        items=[PostPublic(**post.model_dump()) for post in posts],
+        items=[
+            PostPublic(
+                **post.model_dump(),
+                author_username=author_by_id.get(post.author_id).username
+                if author_by_id.get(post.author_id)
+                else post.author_id,
+            )
+            for post in posts
+        ],
         next_cursor=next_cursor,
     )
+
 
 @router.post("/posts", response_model=PostPublic, status_code=status.HTTP_201_CREATED)
 async def create_post(
@@ -34,7 +49,7 @@ async def create_post(
     user: UserInDB = Depends(get_current_user),
 ) -> PostPublic:
     post = await post_service.create_post(db, user.id, post_in)
-    return PostPublic(**post.model_dump())
+    return PostPublic(**post.model_dump(), author_username=user.username)
 
 
 @router.get("/posts/{post_id}", response_model=PostPublic, status_code=status.HTTP_200_OK)
@@ -46,7 +61,13 @@ async def get_post_by_id(
     post = await post_service.get_post_by_id(db, post_id)
     if not post:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Post not found")
-    return PostPublic(**post.model_dump())
+
+    author = await user_repository.get_user_by_id(db, post.author_id)
+
+    return PostPublic(
+        **post.model_dump(),
+        author_username=author.username if author else post.author_id,
+    )
 
 
 @router.patch("/posts/{post_id}", response_model=PostPublic)
@@ -80,7 +101,23 @@ async def add_comment(
     comment = await post_service.add_comment(db, post_id, user.id, comment_in)
     if not comment:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Post not found")
-    return CommentPublic(**comment.model_dump())
+    return CommentPublic(**comment.model_dump(), author_username=user.username)
+
+
+@router.get(
+    "/posts/{post_id}/comments",
+    response_model=list[CommentPublic],
+    status_code=status.HTTP_200_OK,
+)
+async def list_comments(
+    post_id: str,
+    db: AsyncIOMotorDatabase = Depends(get_database),
+    user: UserInDB = Depends(get_current_user),
+) -> list[CommentPublic]:
+    comments = await post_service.get_comments_for_post(db, post_id)
+    if comments is None:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Post not found")
+    return comments
 
 
 @router.post("/posts/{post_id}/likes", response_model=LikePublic, status_code=status.HTTP_201_CREATED)

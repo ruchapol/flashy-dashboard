@@ -1,8 +1,11 @@
 <template>
   <article :class="['post-card', { 'post-card--borderless': borderless }]">
     <div class="post-header">
-      <span class="equation">{{ post.equation_text }}</span>
-      <span class="meta">x ∈ [{{ post.x_min }}, {{ post.x_max }}]</span>
+      <div class="post-header-main">
+        <span class="equation">{{ post.equation_text }}</span>
+        <span class="meta">x ∈ [{{ post.x_min }}, {{ post.x_max }}]</span>
+      </div>
+      <span class="author">by {{ post.author_username }}</span>
     </div>
 
     <div v-if="svgPath" class="graph-preview">
@@ -182,6 +185,12 @@ const postLink = computed(() => `/post/${props.post.id}`);
 
 .post-header {
   display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+}
+
+.post-header-main {
+  display: flex;
   flex-wrap: wrap;
   align-items: baseline;
   gap: 0.5rem;
@@ -216,6 +225,11 @@ const postLink = computed(() => `/post/${props.post.id}`);
 .meta {
   font-size: 0.8rem;
   color: #94a3b8;
+}
+
+.author {
+  font-size: 0.8rem;
+  color: #9ca3af;
 }
 
 .caption {
