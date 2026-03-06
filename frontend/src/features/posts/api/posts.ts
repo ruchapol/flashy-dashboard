@@ -47,7 +47,7 @@ export function buildPostsUrl(limit: number, cursor?: string): string {
 export async function fetchPosts(
   token: string | null,
   cursor?: string,
-  limit = 20
+  limit = 10
 ): Promise<{ items: PostPublic[]; next_cursor: string | null }> {
   const url = buildPostsUrl(limit, cursor);
   const headers: Record<string, string> = {};
@@ -59,7 +59,7 @@ export async function fetchPosts(
 export async function fetchPostsMock(
   _token: string | null,
   cursor?: string,
-  limit = 20
+  limit = 10
 ): Promise<{ items: PostPublic[]; next_cursor: string | null }> {
   const url = buildPostsUrl(limit, cursor);
 
@@ -107,7 +107,7 @@ export async function fetchPostById(
 export async function fetchPostsSafe(
   token: string | null,
   cursor?: string,
-  limit = 20
+  limit = 10
 ): Promise<{ items: PostPublic[]; next_cursor: string | null }> {
   try {
     return await fetchPosts(token, cursor, limit);

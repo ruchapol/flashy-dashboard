@@ -18,7 +18,7 @@ router = APIRouter(tags=["posts"])
 async def get_post(
     db: AsyncIOMotorDatabase = Depends(get_database),
     user: UserInDB = Depends(get_current_user),
-    limit: int = Query(20, ge=1, le=100),
+    limit: int = Query(10, ge=1, le=100),
     cursor: str | None = Query(None),
 ) -> PostListResponse:
     posts, next_cursor = await post_service.get_posts_page(db, limit=limit, cursor=cursor)
