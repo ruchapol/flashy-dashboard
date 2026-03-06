@@ -16,21 +16,42 @@
 
     <p v-if="post.caption" class="caption">{{ post.caption }}</p>
     <div class="post-footer">
-      <span class="stats">{{ post.like_count }} likes · {{ post.comment_count }} comments</span>
-    <RouterLink v-if="showView !== false" :to="postLink" class="link">View</RouterLink>
+      <div class="post-footer-left">
+        <button
+          v-if="auth.isAuthenticated"
+          type="button"
+          class="like-button"
+          :class="{ 'like-button--active': liked }"
+          :disabled="isLiking"
+          @click="toggleLike"
+        >
+          <span class="like-icon">♥</span>
+          <span class="like-label">{{ liked ? "Liked" : "Like" }}</span>
+        </button>
+        <span class="stats">
+          {{ likeCount }} likes · {{ post.comment_count }} comments
+        </span>
+      </div>
+      <RouterLink v-if="showView !== false" :to="postLink" class="link">
+        View
+      </RouterLink>
     </div>
   </article>
 </template>
 
 <script setup lang="ts">
-import { computed } from "vue";
+import { computed, ref } from "vue";
+import { useAuthStore } from "@/features/auth/stores/useAuthStore";
 import type { PostPublic } from "@/features/posts/api/posts";
+import * as postsApi from "@/features/posts/api/posts";
 
 const props = defineProps<{
   post: PostPublic;
   borderless?: boolean;
   showView?: boolean;
 }>();
+
+const auth = useAuthStore();
 
 const SVG_WIDTH = 260;
 const SVG_HEIGHT = 120;
@@ -167,6 +188,32 @@ const svgPath = computed(() => {
 });
 
 const postLink = computed(() => `/post/${props.post.id}`);
+
+const likeCount = ref(props.post.like_count);
+const liked = ref(props.post.is_current_user_liked);
+const isLiking = ref(false);
+
+async function toggleLike() {
+  if (!auth.token || isLiking.value) return;
+
+  isLiking.value = true;
+  try {
+    if (liked.value) {
+      await postsApi.unlikePost(props.post.id, auth.token);
+      liked.value = false;
+      likeCount.value = Math.max(0, likeCount.value - 1);
+    } else {
+      await postsApi.likePost(props.post.id, auth.token);
+      liked.value = true;
+      likeCount.value += 1;
+    }
+  } catch (error) {
+    // eslint-disable-next-line no-console
+    console.warn("[PostCard] toggleLike failed", error);
+  } finally {
+    isLiking.value = false;
+  }
+}
 </script>
 
 <style scoped>
@@ -245,9 +292,58 @@ const postLink = computed(() => `/post/${props.post.id}`);
   align-items: center;
 }
 
+.post-footer-left {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
 .stats {
   font-size: 0.8rem;
   color: #94a3b8;
+}
+
+.like-button {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  padding: 0.2rem 0.6rem;
+  border-radius: 999px;
+  border: 1px solid rgba(148, 163, 184, 0.8);
+  background: transparent;
+  color: #e5e7eb;
+  font-size: 0.8rem;
+  cursor: pointer;
+  transition: background-color 0.15s ease, color 0.15s ease, border-color 0.15s ease,
+    transform 0.05s ease, box-shadow 0.15s ease;
+}
+
+.like-button:hover:not(:disabled) {
+  background: rgba(248, 113, 113, 0.12);
+  border-color: rgba(248, 113, 113, 0.8);
+  transform: translateY(-0.5px);
+  box-shadow: 0 0 0 1px rgba(248, 113, 113, 0.25);
+}
+
+.like-button:disabled {
+  opacity: 0.6;
+  cursor: default;
+  transform: none;
+  box-shadow: none;
+}
+
+.like-button--active {
+  background: rgba(248, 113, 113, 0.16);
+  border-color: rgba(248, 113, 113, 0.9);
+  color: #fecaca;
+}
+
+.like-icon {
+  font-size: 0.8rem;
+}
+
+.like-label {
+  font-size: 0.8rem;
 }
 
 .link {

@@ -6,6 +6,7 @@ from pathlib import Path
 from typing import Any
 
 from bson import ObjectId
+from pymongo import ASCENDING
 
 from app.db.mongo import mongo_client_manager
 
@@ -38,6 +39,10 @@ async def seed_database() -> None:
     await db["comments"].delete_many({})
     await db["posts"].delete_many({})
     await db["users"].delete_many({})
+
+    # Ensure critical indexes for scale.
+    # - likes: fast existence checks and fast bounded lookups per page
+    await db["likes"].create_index([("user_id", ASCENDING), ("post_id", ASCENDING)], unique=True)
 
     user_id_map: dict[str, str] = {}
     post_id_map: dict[str, str] = {}

@@ -37,6 +37,7 @@ class PostInDB(PostBase):
 
 class PostPublic(PostInDB):
     author_username: str
+    is_current_user_liked: bool = False
 
 
 class PostListResponse(BaseModel):

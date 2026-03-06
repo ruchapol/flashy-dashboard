@@ -10,6 +10,7 @@ from app.schemas.post import PostCreate, PostListResponse, PostPublic, PostUpdat
 from app.schemas.user import UserInDB
 from app.services import post_service
 import app.repositories.user_repository as user_repository
+import app.repositories.like_repository as like_repository
 
 
 router = APIRouter(tags=["posts"])
@@ -28,6 +29,12 @@ async def get_post(
     authors = await user_repository.get_users_by_ids(db, list(author_ids))
     author_by_id = {author.id: author for author in authors}
 
+    liked_post_ids = await like_repository.list_liked_post_ids_for_user(
+        db,
+        user.id,
+        [post.id for post in posts],
+    )
+
     return PostListResponse(
         items=[
             PostPublic(
@@ -35,6 +42,7 @@ async def get_post(
                 author_username=author_by_id.get(post.author_id).username
                 if author_by_id.get(post.author_id)
                 else post.author_id,
+                is_current_user_liked=post.id in liked_post_ids,
             )
             for post in posts
         ],
@@ -49,7 +57,11 @@ async def create_post(
     user: UserInDB = Depends(get_current_user),
 ) -> PostPublic:
     post = await post_service.create_post(db, user.id, post_in)
-    return PostPublic(**post.model_dump(), author_username=user.username)
+    return PostPublic(
+        **post.model_dump(),
+        author_username=user.username,
+        is_current_user_liked=False,
+    )
 
 
 @router.get("/posts/{post_id}", response_model=PostPublic, status_code=status.HTTP_200_OK)
@@ -64,9 +76,12 @@ async def get_post_by_id(
 
     author = await user_repository.get_user_by_id(db, post.author_id)
 
+    is_current_user_liked = await like_repository.is_post_liked_by_user(db, post.id, user.id)
+
     return PostPublic(
         **post.model_dump(),
         author_username=author.username if author else post.author_id,
+        is_current_user_liked=is_current_user_liked,
     )
 
 
@@ -84,7 +99,12 @@ async def edit_post(
 
     if not post:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Post not found")
-    return PostPublic(**post.model_dump())
+    is_current_user_liked = await like_repository.is_post_liked_by_user(db, post.id, user.id)
+    return PostPublic(
+        **post.model_dump(),
+        author_username=user.username,
+        is_current_user_liked=is_current_user_liked,
+    )
 
 
 @router.post(

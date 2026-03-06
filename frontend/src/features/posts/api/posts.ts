@@ -4,6 +4,7 @@ export interface PostPublic {
   id: string;
   author_id: string;
   author_username: string;
+  is_current_user_liked: boolean;
   equation_text: string;
   x_min: number;
   x_max: number;
@@ -76,6 +77,8 @@ export async function fetchPostsMock(
     (_, i) => ({
       id: `mock-${cursor ?? "first"}-${i}`,
       author_id: "mock-author",
+      author_username: "mock-author",
+      is_current_user_liked: false,
       equation_text: "sin(x)",
       x_min: -10,
       x_max: 10,
@@ -130,4 +133,24 @@ export async function createPost(
     body: JSON.stringify(body),
   });
   return handleResponse<PostPublic>(res);
+}
+
+export async function likePost(postId: string, token: string): Promise<void> {
+  const res = await fetch(`${API_BASE}/posts/${postId}/likes`, {
+    method: "POST",
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+  });
+  await handleResponse<unknown>(res);
+}
+
+export async function unlikePost(postId: string, token: string): Promise<void> {
+  const res = await fetch(`${API_BASE}/posts/${postId}/likes`, {
+    method: "DELETE",
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+  });
+  await handleResponse<unknown>(res);
 }
