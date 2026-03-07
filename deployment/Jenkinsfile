@@ -6,16 +6,17 @@ pipeline {
     }
 
     environment {
-        DOCKER_REGISTRY = "your-registry.example.com"
-        REGISTRY_CREDENTIALS_ID = "flashy-registry-creds"
+        BE_IMAGE = "flashy-backend"
+        FE_IMAGE = "flashy-frontend"
 
-        BE_IMAGE = "${DOCKER_REGISTRY}/flashy-backend"
-        FE_IMAGE = "${DOCKER_REGISTRY}/flashy-frontend"
+        BE_SSH_HOST = "localhost"
+        BE_SSH_PORT = "2224"
+        FE_SSH_HOST = "localhost"
+        FE_SSH_PORT = "2225"
 
-        BE_SSH_HOST = "flashy-backend-host.example.com"
-        FE_SSH_HOST = "flashy-frontend-host.example.com"
+
         SSH_USER = "jenkins"
-        SSH_KEY_PATH = "/var/lib/jenkins/.ssh/id_rsa"
+        SSH_KEY_PATH = "~/.ssh/id_rsa"
 
         BE_REMOTE_DIR = "/opt/flashy/backend"
         FE_REMOTE_DIR = "/opt/flashy/frontend"
@@ -56,18 +57,34 @@ pipeline {
             }
         }
 
-        stage('Push Images') {
+        stage('Package Images') {
             steps {
                 script {
-                    withCredentials([usernamePassword(credentialsId: REGISTRY_CREDENTIALS_ID, usernameVariable: 'REG_USER', passwordVariable: 'REG_PASS')]) {
-                        sh """
-                            echo "${REG_PASS}" | docker login ${DOCKER_REGISTRY} -u "${REG_USER}" --password-stdin
-                            docker push ${BE_IMAGE}:latest
-                            docker push ${BE_IMAGE}:${BUILD_NUMBER}
-                            docker push ${FE_IMAGE}:latest
-                            docker push ${FE_IMAGE}:${BUILD_NUMBER}
-                        """
-                    }
+                    sh """
+                        rm -f backend-image.tar frontend-image.tar
+                        docker save ${BE_IMAGE}:latest -o backend-image.tar
+                        docker save ${FE_IMAGE}:latest -o frontend-image.tar
+                    """
+                }
+            }
+        }
+
+        stage('Transfer Backend Image') {
+            steps {
+                script {
+                    sh """
+                        scp -i ${SSH_KEY_PATH} -P ${BE_SSH_PORT} -o StrictHostKeyChecking=no backend-image.tar ${SSH_USER}@${BE_SSH_HOST}:${BE_REMOTE_DIR}/backend-image.tar
+                    """
+                }
+            }
+        }
+
+        stage('Transfer Frontend Image') {
+            steps {
+                script {
+                    sh """
+                        scp -i ${SSH_KEY_PATH} -P ${FE_SSH_PORT} -o StrictHostKeyChecking=no frontend-image.tar ${SSH_USER}@${FE_SSH_HOST}:${FE_REMOTE_DIR}/frontend-image.tar
+                    """
                 }
             }
         }
@@ -76,9 +93,9 @@ pipeline {
             steps {
                 script {
                     sh """
-                        ssh -i ${SSH_KEY_PATH} -o StrictHostKeyChecking=no ${SSH_USER}@${BE_SSH_HOST} '
+                        ssh -i ${SSH_KEY_PATH} -p ${BE_SSH_PORT} -o StrictHostKeyChecking=no ${SSH_USER}@${BE_SSH_HOST} '
                           cd ${BE_REMOTE_DIR} && \
-                          docker compose pull && \
+                          docker load -i backend-image.tar && \
                           docker compose up -d --remove-orphans
                         '
                     """
@@ -90,9 +107,9 @@ pipeline {
             steps {
                 script {
                     sh """
-                        ssh -i ${SSH_KEY_PATH} -o StrictHostKeyChecking=no ${SSH_USER}@${FE_SSH_HOST} '
+                        ssh -i ${SSH_KEY_PATH} -p ${FE_SSH_PORT} -o StrictHostKeyChecking=no ${SSH_USER}@${FE_SSH_HOST} '
                           cd ${FE_REMOTE_DIR} && \
-                          docker compose pull && \
+                          docker load -i frontend-image.tar && \
                           docker compose up -d --remove-orphans
                         '
                     """
