@@ -27,6 +27,18 @@ API docs:
 
 MongoDB connection details, JWT settings, and timezone are configured via `backend/app/config.yml` (with optional env overrides); see `backend/app/core/config.py`.
 
+### Run scheduler
+
+The scheduler runs as a separate process (same uvicorn style as the API). From repo root:
+
+```bash
+cd backend
+..\.venv\Scripts\Activate.ps1
+uvicorn app.main_schedule:app --reload --port 8001
+```
+
+Use a different port (e.g. `8001`) if the API is already on `8000`. With Docker: `docker compose --profile scheduler up backend_scheduler`.
+
 ### Load seed data into MongoDB
 
 You can pre-populate the database using `seed-data.json` and the backend seeding script.
