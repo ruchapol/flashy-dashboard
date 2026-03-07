@@ -16,7 +16,7 @@ pipeline {
 
 
         SSH_USER = "jenkins"
-        SSH_KEY_PATH = "~/.ssh/id_rsa"
+        SSH_KEY_PATH = "~/ssh_key/id_rsa"
 
         BE_REMOTE_DIR = "/opt/flashy/backend"
         FE_REMOTE_DIR = "/opt/flashy/frontend"
