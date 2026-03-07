@@ -26,6 +26,28 @@ services:
       - "8000:8000"
     command: uvicorn app.main:app --host 0.0.0.0 --port 8000
 
+  backend_batch:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile.batch
+    container_name: flashy-backend-batch
+    depends_on:
+      - mongo
+    environment:
+      FLASHY_MONGO_URI: mongodb://mongo:27017
+    profiles: ["batch"]
+
+  backend_scheduler:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile.scheduler
+    container_name: flashy-backend-scheduler
+    depends_on:
+      - mongo
+    environment:
+      FLASHY_MONGO_URI: mongodb://mongo:27017
+    profiles: ["scheduler"]
+
 volumes:
   mongo_data:
 

@@ -1,0 +1,34 @@
+---
+description: Scheduler entrypoints must call services, not query DB
+globs: backend/app/**/*schedule*.py
+alwaysApply: false
+---
+
+# Scheduler entrypoints: no direct DB access
+
+When writing scheduler/batch entrypoints (e.g., `main_schedule.py`):
+
+- Do **not** query MongoDB directly from the entrypoint module.
+- The entrypoint should only:
+  - initialize/start the scheduler runtime, and
+  - call **service-layer** functions (in `backend/app/services/`) that orchestrate repositories.
+
+## Examples
+
+```python
+# ❌ BAD — entrypoint touches DB / repositories directly
+from app.db.mongo import mongo_client_manager
+import app.repositories.user_repository as user_repository
+
+db = mongo_client_manager.get_database()
+count = await user_repository.count_users(db)
+print(count)
+```
+
+```python
+# ✅ GOOD — entrypoint delegates to a service
+from app.services.user_service import count_users_and_print
+
+await count_users_and_print()
+```
+

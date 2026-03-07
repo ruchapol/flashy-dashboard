@@ -123,6 +123,75 @@ This file is your **command file** when adding a new feature (e.g., `Bookmark`, 
 
 ---
 
+### Scheduler / batch job steps (APScheduler)
+
+Use this pattern for cron-like tasks (ETL, cleanup, reporting). **Keep the scheduler entrypoint thin**: it should only start the scheduler and call **service-layer** functions. Do **not** query MongoDB directly from `main_schedule.py`.
+
+1. **Add a repository function (DB access only)**
+
+   ```python
+   # backend/app/repositories/user_repository.py
+   from motor.motor_asyncio import AsyncIOMotorDatabase
+
+
+   async def count_users(db: AsyncIOMotorDatabase) -> int:
+       user_collection = db["users"]
+       return await user_collection.count_documents({})
+   ```
+
+2. **Add a service function (orchestrates repositories)**
+
+   ```python
+   # backend/app/services/user_service.py
+   import app.repositories.user_repository as user_repository
+   from app.db.mongo import mongo_client_manager
+
+
+   async def count_users_and_print() -> None:
+       db = mongo_client_manager.get_database()
+       user_count = await user_repository.count_users(db)
+       print("user count:", user_count)
+   ```
+
+3. **Create a scheduler entrypoint (no DB access here)**
+
+   - If your job function is `async def ...`: use `AsyncIOScheduler`
+   - If your job function is sync `def ...`: use `BackgroundScheduler`
+
+   ```python
+   # backend/app/main_schedule.py
+   import asyncio
+
+   from apscheduler.schedulers.asyncio import AsyncIOScheduler
+
+   from app.services.user_service import count_users_and_print
+
+
+   async def main() -> None:
+       scheduler = AsyncIOScheduler()
+       scheduler.add_job(count_users_and_print, "interval", minutes=1)
+       scheduler.start()
+
+       await asyncio.Event().wait()
+
+
+   if __name__ == "__main__":
+       asyncio.run(main())
+   ```
+
+4. **Install dependency + run**
+
+   - Add `APScheduler` to `backend/requirements.txt`
+   - Run the scheduler from an activated venv:
+
+   ```powershell
+   .\.venv\Scripts\Activate.ps1
+   pip install -r backend/requirements.txt
+   python backend/app/main_schedule.py
+   ```
+
+---
+
 ### Frontend feature steps (Vue + TS)
 
 1. **Define types**

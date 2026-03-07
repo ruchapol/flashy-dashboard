@@ -107,3 +107,8 @@ async def get_users_by_ids(
             )
         )
     return users
+
+
+async def count_users(db: AsyncIOMotorDatabase) -> int:
+    user_collection = db["users"]
+    return await user_collection.count_documents({})
