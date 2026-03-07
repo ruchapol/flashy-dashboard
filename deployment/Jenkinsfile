@@ -1,0 +1,139 @@
+pipeline {
+    agent any
+
+    triggers {
+        pollSCM 'H/10 * * * *'
+    }
+
+    environment {
+        DOCKER_REGISTRY = "your-registry.example.com"
+        REGISTRY_CREDENTIALS_ID = "flashy-registry-creds"
+
+        BE_IMAGE = "${DOCKER_REGISTRY}/flashy-backend"
+        FE_IMAGE = "${DOCKER_REGISTRY}/flashy-frontend"
+
+        BE_SSH_HOST = "flashy-backend-host.example.com"
+        FE_SSH_HOST = "flashy-frontend-host.example.com"
+        SSH_USER = "jenkins"
+        SSH_KEY_PATH = "/var/lib/jenkins/.ssh/id_rsa"
+
+        BE_REMOTE_DIR = "/opt/flashy/backend"
+        FE_REMOTE_DIR = "/opt/flashy/frontend"
+    }
+
+    stages {
+        stage('Checkout') {
+            steps {
+                checkout scm
+            }
+        }
+
+        stage('Build Backend Image') {
+            steps {
+                script {
+                    sh """
+                        docker build \
+                          -t ${BE_IMAGE}:latest \
+                          -t ${BE_IMAGE}:${BUILD_NUMBER} \
+                          -f backend/Dockerfile \
+                          backend
+                    """
+                }
+            }
+        }
+
+        stage('Build Frontend Image') {
+            steps {
+                script {
+                    sh """
+                        docker build \
+                          -t ${FE_IMAGE}:latest \
+                          -t ${FE_IMAGE}:${BUILD_NUMBER} \
+                          -f frontend/Dockerfile.prod \
+                          frontend
+                    """
+                }
+            }
+        }
+
+        stage('Push Images') {
+            steps {
+                script {
+                    withCredentials([usernamePassword(credentialsId: REGISTRY_CREDENTIALS_ID, usernameVariable: 'REG_USER', passwordVariable: 'REG_PASS')]) {
+                        sh """
+                            echo "${REG_PASS}" | docker login ${DOCKER_REGISTRY} -u "${REG_USER}" --password-stdin
+                            docker push ${BE_IMAGE}:latest
+                            docker push ${BE_IMAGE}:${BUILD_NUMBER}
+                            docker push ${FE_IMAGE}:latest
+                            docker push ${FE_IMAGE}:${BUILD_NUMBER}
+                        """
+                    }
+                }
+            }
+        }
+
+        stage('Deploy Backend') {
+            steps {
+                script {
+                    sh """
+                        ssh -i ${SSH_KEY_PATH} -o StrictHostKeyChecking=no ${SSH_USER}@${BE_SSH_HOST} '
+                          cd ${BE_REMOTE_DIR} && \
+                          docker compose pull && \
+                          docker compose up -d --remove-orphans
+                        '
+                    """
+                }
+            }
+        }
+
+        stage('Deploy Frontend') {
+            steps {
+                script {
+                    sh """
+                        ssh -i ${SSH_KEY_PATH} -o StrictHostKeyChecking=no ${SSH_USER}@${FE_SSH_HOST} '
+                          cd ${FE_REMOTE_DIR} && \
+                          docker compose pull && \
+                          docker compose up -d --remove-orphans
+                        '
+                    """
+                }
+            }
+        }
+
+        stage('Backend Smoke Check') {
+            steps {
+                script {
+                    sh """
+                        set -e
+                        for i in \$(seq 1 30); do
+                            if curl -fsS http://${BE_SSH_HOST}:8000/health >/dev/null; then
+                                exit 0
+                            fi
+                            sleep 2
+                        done
+                        echo "Backend health check failed after retries"
+                        exit 1
+                    """
+                }
+            }
+        }
+
+        stage('Frontend Smoke Check') {
+            steps {
+                script {
+                    sh """
+                        set -e
+                        for i in \$(seq 1 30); do
+                            if curl -fsS http://${FE_SSH_HOST}/health >/dev/null; then
+                                exit 0
+                            fi
+                            sleep 2
+                        done
+                        echo "Frontend health check failed after retries"
+                        exit 1
+                    """
+                }
+            }
+        }
+    }
+}

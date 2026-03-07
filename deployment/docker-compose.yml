@@ -1,0 +1,99 @@
+version: "3.9"
+
+services:
+  mongo:
+    image: mongo:7
+    container_name: flashy-mongo
+    restart: unless-stopped
+    ports:
+      - "27017:27017"
+    environment:
+      MONGO_INITDB_DATABASE: flashy_dashboard
+    volumes:
+      - mongo_data:/data/db
+
+  # backend:
+  #   build:
+  #     context: ./backend
+  #     dockerfile: Dockerfile
+  #   container_name: flashy-backend
+  #   depends_on:
+  #     - mongo
+  #   environment:
+  #     # Override YAML mongo_uri so the backend talks to the mongo container
+  #     FLASHY_MONGO_URI: mongodb://mongo:27017
+  #   ports:
+  #     - "8000:8000"
+  #   command: uvicorn app.main:app --host 0.0.0.0 --port 8000
+
+  # backend_batch:
+  #   build:
+  #     context: ./backend
+  #     dockerfile: Dockerfile.batch
+  #   container_name: flashy-backend-batch
+  #   depends_on:
+  #     - mongo
+  #   environment:
+  #     FLASHY_MONGO_URI: mongodb://mongo:27017
+  #   profiles: ["batch"]
+
+  backend_scheduler:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile.scheduler
+    container_name: flashy-backend-scheduler
+    depends_on:
+      - mongo
+    environment:
+      FLASHY_MONGO_URI: mongodb://mongo:27017
+    profiles: ["scheduler"]
+
+  be-host:
+    image: lscr.io/linuxserver/openssh-server:latest
+    container_name: flashy-dashboard-be
+    hostname: openssh-server-be
+    environment:
+      PUID: 1000
+      PGID: 1000
+      TZ: Etc/UTC
+      SUDO_ACCESS: "false"
+      PASSWORD_ACCESS: "true"
+      USER_PASSWORD: "P@ssw0rd"
+      USER_NAME: "jenkins"
+      LOG_STDOUT: ""
+    ports:
+      - "2224:2222"
+      - "3001:3000"
+    restart: unless-stopped
+    volumes:
+      - be_host_config:/config
+      # give this “host container” access to Docker on the real host:
+      - /var/run/docker.sock:/var/run/docker.sock
+      
+  fe-host:
+    image: lscr.io/linuxserver/openssh-server:latest
+    container_name: flashy-dashboard-fe
+    hostname: openssh-server-fe
+    environment:
+      PUID: 1000
+      PGID: 1000
+      TZ: Etc/UTC
+      SUDO_ACCESS: "false"
+      PASSWORD_ACCESS: "true"
+      USER_PASSWORD: "P@ssw0rd"
+      USER_NAME: "jenkins"
+      LOG_STDOUT: ""
+    ports:
+      - "2225:2222"
+      - "3002:3000"
+    restart: unless-stopped
+    volumes:
+      - fe_host_config:/config
+      - /var/run/docker.sock:/var/run/docker.sock
+
+volumes:
+  mongo_data:
+  be_host_config:
+  fe_host_config:
+
+
