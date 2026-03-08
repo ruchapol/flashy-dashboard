@@ -73,7 +73,6 @@ pipeline {
             steps {
                 script {
                     sh """
-                        ssh -i ${SSH_KEY_PATH} -p ${BE_SSH_PORT} -o StrictHostKeyChecking=no ${SSH_USER}@${BE_SSH_HOST} "sudo mkdir -p ${BE_REMOTE_DIR} && sudo chown -R ${SSH_USER}:${SSH_USER} ${BE_REMOTE_DIR}"
                         scp -i ${SSH_KEY_PATH} -P ${BE_SSH_PORT} -o StrictHostKeyChecking=no backend-image.tar ${SSH_USER}@${BE_SSH_HOST}:${BE_REMOTE_DIR}/backend-image.tar
                     """
                 }
@@ -84,7 +83,6 @@ pipeline {
             steps {
                 script {
                     sh """
-                        ssh -i ${SSH_KEY_PATH} -p ${FE_SSH_PORT} -o StrictHostKeyChecking=no ${SSH_USER}@${FE_SSH_HOST} "sudo mkdir -p ${FE_REMOTE_DIR} && sudo chown -R ${SSH_USER}:${SSH_USER} ${FE_REMOTE_DIR}"
                         scp -i ${SSH_KEY_PATH} -P ${FE_SSH_PORT} -o StrictHostKeyChecking=no frontend-image.tar ${SSH_USER}@${FE_SSH_HOST}:${FE_REMOTE_DIR}/frontend-image.tar
                     """
                 }

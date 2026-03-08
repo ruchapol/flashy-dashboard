@@ -113,6 +113,31 @@ sudo chmod 700 /var/lib/jenkins/ssh_key
 sudo chmod 600 /var/lib/jenkins/ssh_key/id_rsa
 ```
 
+#### 4) Create deployment folders on each host
+
+The pipeline deploys to:
+
+- BE: `/home/jenkins/flashy/backend`
+- FE: `/home/jenkins/flashy/frontend`
+
+Create them manually on both hosts:
+
+1. Backend host:
+
+```bash
+ssh -p 2224 jenkins@localhost
+sudo mkdir -p /home/jenkins/flashy/backend
+sudo chown -R jenkins:jenkins /home/jenkins/flashy/backend
+```
+
+2. Frontend host:
+
+```bash
+ssh -p 2225 jenkins@localhost
+sudo mkdir -p /home/jenkins/flashy/frontend
+sudo chown -R jenkins:jenkins /home/jenkins/flashy/frontend
+```
+
 ## Next steps
 
 - Implement core backend entities and API routes (`User`, `Post`, `Comment`, `Like`) based on `db-schema.md` and `tasks.md`.
