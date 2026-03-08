@@ -143,7 +143,7 @@ pipeline {
                     sh """
                         set -e
                         for i in \$(seq 1 30); do
-                            if curl -fsS http://${FE_SSH_HOST}/health >/dev/null; then
+                            if curl -fsS http://${FE_SSH_HOST}/ >/dev/null; then
                                 exit 0
                             fi
                             sleep 2
