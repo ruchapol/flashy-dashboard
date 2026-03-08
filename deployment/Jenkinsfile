@@ -74,6 +74,7 @@ pipeline {
                 script {
                     sh """
                         scp -i ${SSH_KEY_PATH} -P ${BE_SSH_PORT} -o StrictHostKeyChecking=no backend-image.tar ${SSH_USER}@${BE_SSH_HOST}:${BE_REMOTE_DIR}/backend-image.tar
+                        scp -i ${SSH_KEY_PATH} -P ${BE_SSH_PORT} -o StrictHostKeyChecking=no deployment/docker-compose.backend.yml ${SSH_USER}@${BE_SSH_HOST}:${BE_REMOTE_DIR}/docker-compose.yml
                     """
                 }
             }
@@ -84,6 +85,7 @@ pipeline {
                 script {
                     sh """
                         scp -i ${SSH_KEY_PATH} -P ${FE_SSH_PORT} -o StrictHostKeyChecking=no frontend-image.tar ${SSH_USER}@${FE_SSH_HOST}:${FE_REMOTE_DIR}/frontend-image.tar
+                        scp -i ${SSH_KEY_PATH} -P ${FE_SSH_PORT} -o StrictHostKeyChecking=no deployment/docker-compose.frontend.yml ${SSH_USER}@${FE_SSH_HOST}:${FE_REMOTE_DIR}/docker-compose.yml
                     """
                 }
             }
