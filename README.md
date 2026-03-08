@@ -128,6 +128,7 @@ Create them manually on both hosts:
 ssh -p 2224 jenkins@localhost
 sudo mkdir -p /home/jenkins/flashy/backend
 sudo chown -R jenkins:jenkins /home/jenkins/flashy/backend
+exit
 ```
 
 2. Frontend host:
@@ -136,7 +137,24 @@ sudo chown -R jenkins:jenkins /home/jenkins/flashy/backend
 ssh -p 2225 jenkins@localhost
 sudo mkdir -p /home/jenkins/flashy/frontend
 sudo chown -R jenkins:jenkins /home/jenkins/flashy/frontend
+exit
 ```
+
+#### 5) Add `jenkins` user to sudoers (passwordless)
+
+The Jenkins pipeline connects to the FE/BE host containers as `jenkins` and runs `sudo docker ...`. To avoid interactive password prompts (which would hang the pipeline), add `jenkins` to sudoers with passwordless access inside each host container.
+
+From your real machine, run these **once** after the FE/BE host containers are up:
+
+```bash
+# Backend host container (use tee to avoid Windows cmd/PowerShell interpreting > as redirect)
+docker exec -it flashy-dashboard-be sh -c "echo 'jenkins ALL=(ALL) NOPASSWD: ALL' | tee /etc/sudoers.d/jenkins && chmod 440 /etc/sudoers.d/jenkins"
+
+# Frontend host container
+docker exec -it flashy-dashboard-fe sh -c "echo 'jenkins ALL=(ALL) NOPASSWD: ALL' | tee /etc/sudoers.d/jenkins && chmod 440 /etc/sudoers.d/jenkins"
+```
+
+After this, the `Deploy Backend` and `Deploy Frontend` stages in the Jenkins pipeline can run `sudo ...` non-interactively.
 
 ## Next steps
 
