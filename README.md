@@ -65,7 +65,15 @@ npm install
 npm run dev
 ```
 
-Then open the printed `http://localhost:5173` URL. You should see:
+**Frontend config (env)**
+
+- `frontend/.env.development` (or `VITE_*` in `.env`) sets the backend URL used by the Vite dev proxy.
+- `VITE_BACKEND_URL`: backend origin for the dev proxy (default `http://localhost:8000`).
+- `VITE_API_BASE_URL`: base path or full URL for `fetch()` in the app (default `/api`). See `frontend/.env.example`.
+
+When running the **production frontend image** (e.g. on port 8082), nginx proxies `/api` to the backend. Set the env var `BACKEND_URL` when starting the container (e.g. `-e BACKEND_URL=http://host.docker.internal:8000`). Default is `http://host.docker.internal:8000` (backend on host, Docker Desktop). On Linux you may need `--add-host=host.docker.internal:host-gateway` or set `BACKEND_URL` to your backend URL.
+
+Then open the printed `http://localhost:5173` URL. API calls use `/api` and are proxied to the backend. You should see:
 
 - A top bar with the **Flashy Dashboard** logo and **Create Equation** button.
 - Routes for timeline (`/`), create (`/create`), post detail (`/post/:id`), login (`/login`), and register (`/register`) with placeholder content.

@@ -1,17 +1,28 @@
 import path from "path";
-import { defineConfig } from "vite";
+import { defineConfig, loadEnv } from "vite";
 import vue from "@vitejs/plugin-vue";
 
-export default defineConfig({
-  plugins: [vue()],
-  resolve: {
-    alias: { "@": path.resolve(__dirname, "src") },
-  },
-  server: {
-    port: 5173,
-    proxy: {
-      "/api": { target: "http://localhost:8000", changeOrigin: true, rewrite: (p) => p.replace(/^\/api/, "") },
+import { getBackendUrlFromEnv } from "./config/env";
+
+export default defineConfig(({ mode }) => {
+  const env = loadEnv(mode, process.cwd(), "VITE_");
+  const backendUrl = getBackendUrlFromEnv(env as Record<string, string>);
+
+  return {
+    plugins: [vue()],
+    resolve: {
+      alias: { "@": path.resolve(__dirname, "src") },
     },
-  },
+    server: {
+      port: 5173,
+      proxy: {
+        "/api": {
+          target: backendUrl,
+          changeOrigin: true,
+          rewrite: (p) => p.replace(/^\/api/, ""),
+        },
+      },
+    },
+  };
 });
 
