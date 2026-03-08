@@ -97,8 +97,8 @@ pipeline {
                     sh """
                         ssh -i ${SSH_KEY_PATH} -p ${BE_SSH_PORT} -o StrictHostKeyChecking=no ${SSH_USER}@${BE_SSH_HOST} '
                           cd ${BE_REMOTE_DIR} && \
-                          docker load -i backend-image.tar && \
-                          docker compose up -d --remove-orphans
+                          sudo docker load -i backend-image.tar && \
+                          sudo docker compose up -d --remove-orphans
                         '
                     """
                 }
@@ -111,8 +111,8 @@ pipeline {
                     sh """
                         ssh -i ${SSH_KEY_PATH} -p ${FE_SSH_PORT} -o StrictHostKeyChecking=no ${SSH_USER}@${FE_SSH_HOST} '
                           cd ${FE_REMOTE_DIR} && \
-                          docker load -i frontend-image.tar && \
-                          docker compose up -d --remove-orphans
+                          sudo docker load -i frontend-image.tar && \
+                          sudo docker compose up -d --remove-orphans
                         '
                     """
                 }

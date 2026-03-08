@@ -70,6 +70,63 @@ Then open the printed `http://localhost:5173` URL. You should see:
 - A top bar with the **Flashy Dashboard** logo and **Create Equation** button.
 - Routes for timeline (`/`), create (`/create`), post detail (`/post/:id`), login (`/login`), and register (`/register`) with placeholder content.
 
+## Deployment (Jenkins -> FE/BE "servers" over SSH)
+
+This repo supports a deployment approach where:
+
+- Jenkins builds FE/BE Docker images, saves them as `.tar`, and transfers them to each server (SCP/rsync).
+- Each server runs `docker compose up -d` locally to run/restart containers.
+
+In local/dev, the "servers" can be simulated as **two SSH host containers** (`be-host` and `fe-host`) started by `deployment/docker-compose.yml`.
+
+### Provision FE/BE host containers (Linux)
+
+#### 1) Start the FE/BE host containers
+
+From the repo root:
+
+```bash
+docker compose -f deployment/docker-compose.yml up -d --build be-host fe-host
+```
+
+These containers expose SSH on:
+
+- BE host: `localhost:2224`
+- FE host: `localhost:2225`
+
+#### 2) Register your SSH public key on both hosts (so Jenkins can SSH without password)
+
+```bash
+ssh-copy-id -p 2224 -i ~/.ssh/id_rsa.pub jenkins@localhost
+ssh-copy-id -p 2225 -i ~/.ssh/id_rsa.pub jenkins@localhost
+```
+
+#### 3) Prepare Jenkins SSH key path on the Jenkins machine
+
+The pipeline expects the private key to exist at `/var/lib/jenkins/ssh_key/id_rsa`.
+
+```bash
+sudo mkdir -p /var/lib/jenkins/ssh_key
+sudo cp ~/.ssh/id_rsa /var/lib/jenkins/ssh_key/id_rsa
+sudo chown -R jenkins:jenkins /var/lib/jenkins/ssh_key
+sudo chmod 700 /var/lib/jenkins/ssh_key
+sudo chmod 600 /var/lib/jenkins/ssh_key/id_rsa
+```
+
+#### 4) Create deployment folders on each host
+
+The pipeline deploys to:
+
+- BE: `/home/jenkins/flashy/backend`
+- FE: `/home/jenkins/flashy/frontend`
+
+Create them on both hosts:
+
+```bash
+ssh -p 2224 jenkins@localhost "mkdir -p /home/jenkins/flashy/backend"
+ssh -p 2225 jenkins@localhost "mkdir -p /home/jenkins/flashy/frontend"
+```
+
 ## Next steps
 
 - Implement core backend entities and API routes (`User`, `Post`, `Comment`, `Like`) based on `db-schema.md` and `tasks.md`.

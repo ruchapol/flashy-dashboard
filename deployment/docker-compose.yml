@@ -49,14 +49,16 @@ services:
     profiles: ["scheduler"]
 
   be-host:
-    image: lscr.io/linuxserver/openssh-server:latest
+    build:
+      context: ./deployment/openssh-docker
+      dockerfile: Dockerfile
     container_name: flashy-dashboard-be
     hostname: openssh-server-be
     environment:
       PUID: 1000
       PGID: 1000
       TZ: Etc/UTC
-      SUDO_ACCESS: "false"
+      SUDO_ACCESS: "true"
       PASSWORD_ACCESS: "true"
       USER_PASSWORD: "P@ssw0rd"
       USER_NAME: "jenkins"
@@ -71,14 +73,16 @@ services:
       - /var/run/docker.sock:/var/run/docker.sock
       
   fe-host:
-    image: lscr.io/linuxserver/openssh-server:latest
+    build:
+      context: ./deployment/openssh-docker
+      dockerfile: Dockerfile
     container_name: flashy-dashboard-fe
     hostname: openssh-server-fe
     environment:
       PUID: 1000
       PGID: 1000
       TZ: Etc/UTC
-      SUDO_ACCESS: "false"
+      SUDO_ACCESS: "true"
       PASSWORD_ACCESS: "true"
       USER_PASSWORD: "P@ssw0rd"
       USER_NAME: "jenkins"
