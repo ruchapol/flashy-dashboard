@@ -10,6 +10,8 @@ COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
 COPY . .
+# Use config.dev.yml as config.yml for Docker (mongo hostname, etc.)
+COPY app/config.dev.yml app/config.yml
 
 EXPOSE 8000
 

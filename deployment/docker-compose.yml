@@ -54,7 +54,10 @@ services:
       dockerfile: Dockerfile
     container_name: flashy-dashboard-be
     hostname: openssh-server-be
+    depends_on:
+      - mongo
     environment:
+      FLASHY_MONGO_URI: mongodb://mongo:27017
       PUID: 1000
       PGID: 1000
       TZ: Etc/UTC

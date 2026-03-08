@@ -1,0 +1,12 @@
+app_name: "Flashy Dashboard API"
+# For Docker: use mongo service hostname (same compose network).
+# For local dev on host: use localhost or override via FLASHY_MONGO_URI.
+MONGO_URI: "mongodb://mongo:27017"
+mongo_db_name: "flashy_dashboard"
+
+jwt_secret_key: "CHANGE_ME_IN_PRODUCTION"
+jwt_algorithm: "HS256"
+access_token_expires_minutes: 1440
+
+app_timezone: "Asia/Bangkok"
+
