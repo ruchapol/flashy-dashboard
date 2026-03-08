@@ -123,8 +123,8 @@ The pipeline deploys to:
 Create them on both hosts:
 
 ```bash
-ssh -p 2224 jenkins@localhost "mkdir -p /home/jenkins/flashy/backend"
-ssh -p 2225 jenkins@localhost "mkdir -p /home/jenkins/flashy/frontend"
+ssh -p 2224 jenkins@localhost "sudo mkdir -p /home/jenkins/flashy/backend && sudo chown -R jenkins:jenkins /home/jenkins/flashy/backend"
+ssh -p 2225 jenkins@localhost "sudo mkdir -p /home/jenkins/flashy/frontend && sudo chown -R jenkins:jenkins /home/jenkins/flashy/frontend"
 ```
 
 ## Next steps

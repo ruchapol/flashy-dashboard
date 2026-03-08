@@ -50,7 +50,7 @@ services:
 
   be-host:
     build:
-      context: ./deployment/openssh-docker
+      context: ./openssh-docker
       dockerfile: Dockerfile
     container_name: flashy-dashboard-be
     hostname: openssh-server-be
@@ -74,7 +74,7 @@ services:
       
   fe-host:
     build:
-      context: ./deployment/openssh-docker
+      context: ./openssh-docker
       dockerfile: Dockerfile
     container_name: flashy-dashboard-fe
     hostname: openssh-server-fe
