@@ -1,7 +1,6 @@
 app_name: "Flashy Dashboard API"
-# For Docker: use mongo service hostname (same compose network).
-# For local dev on host: use localhost or override via FLASHY_MONGO_URI.
-MONGO_URI: "mongodb://mongo:27017"
+# Host MongoDB (published from docker-compose "mongo" service)
+MONGO_URI: "mongodb://192.168.1.36:27017"
 mongo_db_name: "flashy_dashboard"
 
 jwt_secret_key: "CHANGE_ME_IN_PRODUCTION"
