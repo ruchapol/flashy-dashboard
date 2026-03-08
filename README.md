@@ -140,21 +140,20 @@ sudo chown -R jenkins:jenkins /home/jenkins/flashy/frontend
 exit
 ```
 
-#### 5) Add `jenkins` user to sudoers (passwordless)
+#### 5) (Optional) Allow passwordless sudo for Docker only
 
-The Jenkins pipeline connects to the FE/BE host containers as `jenkins` and runs `sudo docker ...`. To avoid interactive password prompts (which would hang the pipeline), add `jenkins` to sudoers with passwordless access inside each host container.
+By default, `sudo` requires a password (simulating real servers). The Jenkins pipeline cannot type a password, so the deploy stages will hang unless you allow jenkins to run `docker` without a password.
 
-From your real machine, run these **once** after the FE/BE host containers are up:
+**If you want the pipeline to deploy automatically**, add a sudoers rule that allows only `docker` (not full sudo). Run these once (use `tee` to avoid Windows cmd/PowerShell interpreting `>` as redirect):
 
 ```bash
-# Backend host container (use tee to avoid Windows cmd/PowerShell interpreting > as redirect)
-docker exec -it flashy-dashboard-be sh -c "echo 'jenkins ALL=(ALL) NOPASSWD: ALL' | tee /etc/sudoers.d/jenkins && chmod 440 /etc/sudoers.d/jenkins"
-
-# Frontend host container
-docker exec -it flashy-dashboard-fe sh -c "echo 'jenkins ALL=(ALL) NOPASSWD: ALL' | tee /etc/sudoers.d/jenkins && chmod 440 /etc/sudoers.d/jenkins"
+docker exec -it flashy-dashboard-be sh -c "echo 'jenkins ALL=(ALL) NOPASSWD: /usr/bin/docker' | tee /etc/sudoers.d/jenkins-docker && chmod 440 /etc/sudoers.d/jenkins-docker"
+docker exec -it flashy-dashboard-fe sh -c "echo 'jenkins ALL=(ALL) NOPASSWD: /usr/bin/docker' | tee /etc/sudoers.d/jenkins-docker && chmod 440 /etc/sudoers.d/jenkins-docker"
 ```
 
-After this, the `Deploy Backend` and `Deploy Frontend` stages in the Jenkins pipeline can run `sudo ...` non-interactively.
+This lets `sudo docker load` and `sudo docker compose` run without a password, while `sudo mkdir`, `sudo chown`, etc. still require a password.
+
+**If you want strict server simulation** (all sudo requires password), skip this step. The pipeline will build and transfer images, but you must deploy manually via SSH.
 
 ## Next steps
 
